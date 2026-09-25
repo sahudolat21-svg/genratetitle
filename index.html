@@ -49,7 +49,6 @@
                 <button onclick="showHome()" class="bg-slate-700 hover:bg-slate-600 text-white px-3 py-1.5 rounded text-sm transition font-semibold" title="Home"><i class="fas fa-home"></i> <span class="hidden md:inline">Home</span></button>
                 <button onclick="showHistory()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded text-sm transition font-semibold" title="History"><i class="fas fa-history"></i> <span class="hidden md:inline">History</span></button>
                 
-                <!-- ONLY 3.8-FLASH -->
                 <select id="modelSelect" class="bg-slate-800 text-sm px-3 py-1.5 rounded border border-slate-600 focus:outline-none focus:border-indigo-500 text-indigo-300 font-semibold w-40 md:w-48">
                     <option value="gemini-3.8-flash">gemini-3.8-flash</option>
                 </select>
@@ -76,7 +75,7 @@
                 <input type="file" id="videoInput" accept="video/*" class="hidden" onchange="handleVideoUpload(event)">
                 <i class="fas fa-cloud-upload-alt text-5xl text-indigo-400 mb-4"></i>
                 <h2 class="text-2xl font-bold mb-2">Upload Video to Generate Tags, Title & Thumbnail</h2>
-                <p class="text-slate-400 mb-4 text-sm">Select any MP4, WebM or MKV file. Running exclusively on gemini-3.8-flash.</p>
+                <p class="text-slate-400 mb-4 text-sm">Select any MP4, WebM or MKV file. Auto-recovers if rate limit is reached.</p>
                 <button onclick="document.getElementById('videoInput').click()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-3 rounded-lg font-bold shadow-lg transition mt-4">Select Video File</button>
             </section>
 
@@ -379,12 +378,12 @@
                     4. A short punchy catchy text phrase (max 4-5 words) that should be displayed bold on the YouTube thumbnail.
                     Return STRICTLY in JSON format: {"title": "...", "description": "...", "tags": "...", "thumbText": "..."}`;
                     
-                    await callGeminiAPI(prompt, currentImageBase64, selectedModel, apiKey);
+                    await callGeminiAPI(prompt, currentImageBase64, selectedModel, apiKey, 0);
                 }, 600);
             };
         }
 
-        async function callGeminiAPI(prompt, base64Image, modelName, apiKey) {
+        async function callGeminiAPI(prompt, base64Image, modelName, apiKey, retryCount) {
             document.getElementById("loadingText").innerText = `Analyzing with ${modelName}...`;
             
             const url = `https://generativelanguage.googleapis.com/v1/models/${modelName}:generateContent?key=${apiKey}`;
@@ -394,7 +393,15 @@
                 let response = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: requestBody });
                 let data = await response.json();
                 
+                // AUTO-RETRY IF QUOTA EXCEEDED
                 if (data.error) {
+                    if (data.error.message.includes("quota") || data.error.message.includes("rate limit")) {
+                        if (retryCount < 3) {
+                            document.getElementById("loadingText").innerText = `Rate limit reached. Auto-retrying in 10 seconds... (${retryCount + 1}/3)`;
+                            await new Promise(resolve => setTimeout(resolve, 10500));
+                            return await callGeminiAPI(prompt, base64Image, modelName, apiKey, retryCount + 1);
+                        }
+                    }
                     alert("API Error: " + data.error.message);
                     resetUI(); return;
                 }
