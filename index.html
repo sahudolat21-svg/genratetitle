@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TubeGenius AI v10.0 - Full Auto Mode</title>
+    <title>TubeGenius AI v11.0 - No Popup Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -16,57 +16,58 @@
 
     <!-- AUTHENTICATION SECTION -->
     <div id="authSection" class="min-h-screen flex items-center justify-center p-6">
-        <div class="glass-panel p-8 rounded-xl w-full max-w-md shadow-2xl flex flex-col gap-5 border-t-4 border-t-rose-500">
+        <div class="glass-panel p-8 rounded-xl w-full max-w-md shadow-2xl flex flex-col gap-5 border-t-4 border-t-indigo-500">
             <div class="text-center mb-2">
                 <i class="fab fa-youtube text-5xl text-red-500 mb-4 drop-shadow-[0_0_10px_rgba(239,68,68,0.8)]"></i>
-                <h2 id="authTitle" class="text-2xl font-bold text-white">TubeGenius <span class="bg-rose-600 text-white text-xs px-2 py-1 rounded ml-2">v10.0</span></h2>
+                <h2 id="authTitle" class="text-2xl font-bold text-white">TubeGenius <span class="bg-indigo-600 text-white text-xs px-2 py-1 rounded ml-2">v11.0</span></h2>
                 <p id="authSubtitle" class="text-sm text-slate-400 mt-1">Please login to continue.</p>
             </div>
             
             <div class="flex flex-col gap-4">
-                <input type="email" id="emailInput" placeholder="Email Address" class="w-full bg-slate-800 border border-slate-600 rounded px-4 py-3 focus:outline-none focus:border-rose-500 transition">
-                <input type="password" id="passwordInput" placeholder="Password" class="w-full bg-slate-800 border border-slate-600 rounded px-4 py-3 focus:outline-none focus:border-rose-500 transition" onkeypress="if(event.key === 'Enter') handleAuth()">
-                <button id="authBtn" onclick="handleAuth()" class="w-full bg-rose-600 hover:bg-rose-500 text-white font-bold py-3 px-4 rounded-lg shadow-lg transition mt-2">Login</button>
+                <input type="email" id="emailInput" placeholder="Email Address" class="w-full bg-slate-800 border border-slate-600 rounded px-4 py-3 focus:outline-none focus:border-indigo-500 transition">
+                <input type="password" id="passwordInput" placeholder="Password" class="w-full bg-slate-800 border border-slate-600 rounded px-4 py-3 focus:outline-none focus:border-indigo-500 transition" onkeypress="if(event.key === 'Enter') handleAuth()">
+                
+                <!-- ERROR / SUCCESS MESSAGE DIV -->
+                <div id="authMessage" class="hidden text-center text-sm font-semibold p-2 rounded"></div>
+
+                <button id="authBtn" onclick="handleAuth()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 px-4 rounded-lg shadow-lg transition mt-2">Login</button>
             </div>
             <div class="text-center text-sm text-slate-400 mt-2" id="authSwitchText">
-                Don't have an account? <span class="text-rose-400 cursor-pointer hover:underline font-semibold" onclick="toggleAuthMode()">Register here</span>
+                Don't have an account? <span class="text-indigo-400 cursor-pointer hover:underline font-semibold" onclick="toggleAuthMode()">Register here</span>
             </div>
         </div>
     </div>
 
     <!-- MAIN APP SECTION -->
     <div id="mainApp" class="hidden min-h-screen flex flex-col">
-        <header class="glass-panel sticky top-0 z-50 px-6 py-4 flex justify-between items-center shadow-lg border-b-2 border-b-rose-500 flex-wrap gap-4">
+        <header class="glass-panel sticky top-0 z-50 px-6 py-4 flex justify-between items-center shadow-lg border-b-2 border-b-indigo-500 flex-wrap gap-4">
             <div class="flex items-center gap-2 text-xl font-bold text-red-500">
                 <i class="fab fa-youtube"></i>
-                <span class="text-white">TubeGenius <span class="bg-rose-600 text-white text-xs px-2 py-1 rounded ml-1">v10.0</span></span>
+                <span class="text-white">TubeGenius <span class="bg-indigo-600 text-white text-xs px-2 py-1 rounded ml-1">v11.0</span></span>
             </div>
             <div class="flex items-center gap-3 flex-wrap">
-                <!-- MODEL DROPDOWN MENU -->
-                <select id="modelSelect" class="bg-slate-800 text-sm px-3 py-1.5 rounded border border-slate-600 focus:outline-none focus:border-rose-500 text-rose-300 font-semibold max-w-[180px]">
+                <select id="modelSelect" class="bg-slate-800 text-sm px-3 py-1.5 rounded border border-slate-600 focus:outline-none focus:border-indigo-500 text-indigo-300 font-semibold max-w-[180px]">
                     <option value="waiting">Awaiting API Key...</option>
                 </select>
-
-                <input type="password" id="apiKeyInput" placeholder="Gemini API Key..." class="bg-slate-800 text-sm px-3 py-1.5 rounded border border-slate-600 focus:outline-none focus:border-rose-500 w-32 md:w-48">
+                <input type="password" id="apiKeyInput" placeholder="Gemini API Key..." class="bg-slate-800 text-sm px-3 py-1.5 rounded border border-slate-600 focus:outline-none focus:border-indigo-500 w-32 md:w-48">
                 <button onclick="saveApiKey()" class="bg-blue-600 text-white px-3 py-1.5 rounded text-sm transition">Save Key</button>
                 <button onclick="logout()" class="bg-slate-700 text-white px-3 py-1.5 rounded text-sm transition"><i class="fas fa-sign-out-alt"></i></button>
             </div>
         </header>
 
         <main class="flex-grow p-6 max-w-6xl mx-auto w-full flex flex-col gap-6">
-            <section id="uploadSection" class="glass-panel p-10 rounded-xl text-center border-dashed border-2 border-slate-600 hover:border-rose-500 transition cursor-pointer flex flex-col items-center justify-center min-h-[300px]">
+            <section id="uploadSection" class="glass-panel p-10 rounded-xl text-center border-dashed border-2 border-slate-600 hover:border-indigo-500 transition cursor-pointer flex flex-col items-center justify-center min-h-[300px]">
                 <input type="file" id="videoInput" accept="video/*" class="hidden" onchange="handleVideoUpload(event)">
-                <i class="fas fa-magic text-5xl text-rose-400 mb-4"></i>
-                <h2 class="text-2xl font-bold mb-2">Upload Video (Full Auto Mode)</h2>
-                <p class="text-slate-400 mb-4 text-sm">We will auto-detect your working AI models!</p>
-                <button onclick="document.getElementById('videoInput').click()" class="bg-rose-600 hover:bg-rose-500 text-white px-6 py-3 rounded-lg font-bold shadow-lg transition mt-2">Select Video</button>
+                <i class="fas fa-rocket text-5xl text-indigo-400 mb-4"></i>
+                <h2 class="text-2xl font-bold mb-2">Upload Video to Generate</h2>
+                <button onclick="document.getElementById('videoInput').click()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-3 rounded-lg font-bold shadow-lg transition mt-4">Select Video</button>
             </section>
 
             <video id="hiddenVideo" class="hidden" preload="metadata" crossorigin="anonymous"></video>
             <canvas id="hiddenCanvas" class="hidden"></canvas>
 
             <div id="loadingIndicator" class="hidden text-center py-10 flex flex-col items-center">
-                <i class="fas fa-circle-notch fa-spin text-4xl text-rose-500 mb-3"></i>
+                <i class="fas fa-circle-notch fa-spin text-4xl text-indigo-500 mb-3"></i>
                 <p class="text-lg text-slate-300 font-semibold" id="loadingText">Processing...</p>
             </div>
 
@@ -75,7 +76,7 @@
                     <div class="glass-panel p-4 rounded-xl"><video id="previewVideo" controls class="w-full rounded-lg bg-black"></video></div>
                     <div class="glass-panel p-4 rounded-xl flex flex-col items-center">
                         <canvas id="thumbnailCanvas" class="w-full rounded-lg mb-4 bg-black"></canvas>
-                        <button onclick="downloadThumbnail()" class="w-full bg-rose-600 text-white px-4 py-2 rounded font-bold"><i class="fas fa-download"></i> Download Thumbnail</button>
+                        <button onclick="downloadThumbnail()" class="w-full bg-indigo-600 text-white px-4 py-2 rounded font-bold"><i class="fas fa-download"></i> Download Thumbnail</button>
                     </div>
                 </div>
                 <div class="w-full md:w-2/3 flex flex-col gap-6">
@@ -90,8 +91,8 @@
                     <div class="glass-panel p-6 rounded-xl flex flex-col">
                         <h3 class="font-bold mb-2 text-slate-300">Refine Results</h3>
                         <div class="flex gap-2">
-                            <input type="text" id="chatInput" placeholder="Type changes..." class="flex-grow bg-slate-800 border rounded-l px-4 py-2" onkeypress="if(event.key === 'Enter') refineMetadata()">
-                            <button onclick="refineMetadata()" class="bg-rose-600 text-white px-6 py-2 rounded-r font-bold">Update</button>
+                            <input type="text" id="chatInput" placeholder="Make the title more catchy..." class="flex-grow bg-slate-800 border rounded-l px-4 py-2" onkeypress="if(event.key === 'Enter') refineMetadata()">
+                            <button onclick="refineMetadata()" class="bg-indigo-600 text-white px-6 py-2 rounded-r font-bold">Update</button>
                         </div>
                     </div>
                 </div>
@@ -101,6 +102,7 @@
 
     <script>
         let isLoginMode = true;
+
         document.addEventListener("DOMContentLoaded", () => {
             const currentUser = localStorage.getItem("currentUser");
             if (currentUser) showMainApp(currentUser);
@@ -111,26 +113,55 @@
             }
         });
 
+        // Error message shower function
+        function showAuthMessage(msg, type) {
+            const msgBox = document.getElementById('authMessage');
+            if(!msg) { msgBox.classList.add('hidden'); return; }
+            msgBox.innerHTML = msg;
+            msgBox.className = type === 'error' 
+                ? "text-center text-sm font-semibold p-2 rounded bg-red-900/50 text-red-400 border border-red-500 mt-2" 
+                : "text-center text-sm font-semibold p-2 rounded bg-green-900/50 text-green-400 border border-green-500 mt-2";
+            msgBox.classList.remove('hidden');
+        }
+
         function toggleAuthMode() {
             isLoginMode = !isLoginMode;
-            document.getElementById('authTitle').innerHTML = isLoginMode ? 'TubeGenius <span class="bg-rose-600 text-white text-xs px-2 py-1 rounded ml-2">v10.0</span>' : 'Register <span class="bg-rose-600 text-white text-xs px-2 py-1 rounded ml-2">v10.0</span>';
+            document.getElementById('authTitle').innerHTML = isLoginMode ? 'TubeGenius <span class="bg-indigo-600 text-white text-xs px-2 py-1 rounded ml-2">v11.0</span>' : 'Create Account <span class="bg-indigo-600 text-white text-xs px-2 py-1 rounded ml-2">v11.0</span>';
+            document.getElementById('authSubtitle').innerText = isLoginMode ? 'Please login to continue.' : 'Create a brand new account.';
             document.getElementById('authBtn').innerText = isLoginMode ? 'Login' : 'Register';
+            
+            // This line fixes the text not switching issue!
+            document.getElementById('authSwitchText').innerHTML = isLoginMode 
+                ? 'Don\'t have an account? <span class="text-indigo-400 cursor-pointer hover:underline font-semibold" onclick="toggleAuthMode()">Register here</span>'
+                : 'Already have an account? <span class="text-indigo-400 cursor-pointer hover:underline font-semibold" onclick="toggleAuthMode()">Login here</span>';
+            
+            showAuthMessage(""); // Clear any previous errors
         }
 
         function handleAuth() {
             const email = document.getElementById('emailInput').value.trim();
             const password = document.getElementById('passwordInput').value.trim();
-            if (!email || !password) return alert("Enter email and password");
+            
+            if (!email || !password) return showAuthMessage("⚠️ Please enter both email and password!", "error");
 
             let users = JSON.parse(localStorage.getItem('tubegenius_users') || '[]');
+            
             if (isLoginMode) {
                 if (users.find(u => u.email === email && u.password === password)) {
-                    localStorage.setItem('currentUser', email); showMainApp(email);
-                } else alert("Invalid credentials!");
+                    showAuthMessage("✅ Logging in...", "success");
+                    localStorage.setItem('currentUser', email); 
+                    setTimeout(() => showMainApp(email), 500);
+                } else {
+                    showAuthMessage("❌ Invalid credentials! Please click 'Register here' to create an account first.", "error");
+                }
             } else {
+                if(users.find(u => u.email === email)) {
+                    return showAuthMessage("⚠️ Email already registered! Please switch to Login.", "error");
+                }
                 users.push({ email, password });
                 localStorage.setItem('tubegenius_users', JSON.stringify(users));
-                alert("Registered Successfully!"); toggleAuthMode();
+                showAuthMessage("✅ Registered successfully! You can now login.", "success");
+                setTimeout(() => toggleAuthMode(), 1500);
             }
         }
 
@@ -143,10 +174,11 @@
             localStorage.removeItem('currentUser');
             document.getElementById('authSection').classList.remove('hidden');
             document.getElementById('mainApp').classList.add('hidden');
+            document.getElementById('emailInput').value = "";
+            document.getElementById('passwordInput').value = "";
+            showAuthMessage("");
         }
 
-        // ================= SECURE MODEL FETCHER =================
-        // Ye function Google se check karke sirf wahi model dega jo aapke liye allowed hai
         async function fetchAvailableModels(apiKey) {
             const selectEl = document.getElementById("modelSelect");
             selectEl.innerHTML = `<option value="waiting">Finding models...</option>`;
@@ -161,7 +193,6 @@
                 }
                 
                 selectEl.innerHTML = "";
-                // Filter properly
                 const validModels = data.models.filter(m => m.supportedGenerationMethods && m.supportedGenerationMethods.includes("generateContent") && m.name.includes("gemini"));
 
                 if (validModels.length === 0) {
@@ -176,14 +207,9 @@
                     selectEl.appendChild(opt);
                 });
 
-                // Auto select a smart default (like flash)
                 let defaultModel = Array.from(selectEl.options).find(opt => opt.value.includes("flash"));
-                if (defaultModel) {
-                    selectEl.value = defaultModel.value;
-                    return defaultModel.value;
-                }
+                if (defaultModel) { selectEl.value = defaultModel.value; return defaultModel.value; }
                 return selectEl.options[0].value;
-
             } catch (err) {
                 selectEl.innerHTML = `<option value="waiting">Network Error</option>`;
                 return null;
@@ -192,11 +218,11 @@
 
         async function saveApiKey() {
             const key = document.getElementById("apiKeyInput").value;
-            if(!key) return alert("Enter API key!");
+            if(!key) { alert("Enter API key!"); return; }
             localStorage.setItem("gemini_api_key", key);
             document.getElementById("modelSelect").innerHTML = `<option value="waiting">Finding models...</option>`;
             await fetchAvailableModels(key);
-            alert("API Key saved and models loaded!");
+            alert("API Key saved successfully!");
         }
 
         function resetUI() {
@@ -204,7 +230,6 @@
             document.getElementById("uploadSection").classList.remove("hidden");
         }
 
-        // ================= AI GENERATION =================
         let currentImageBase64 = "";
 
         async function handleVideoUpload(event) {
@@ -212,25 +237,19 @@
             if (!file) return;
             
             const apiKey = localStorage.getItem("gemini_api_key") || document.getElementById("apiKeyInput").value;
-            if (!apiKey) {
-                alert("Please paste your Gemini API Key in the top right box first!");
-                return;
-            }
+            if (!apiKey) return alert("Please put your Gemini API Key in the box at the top right.");
 
             document.getElementById("uploadSection").classList.add("hidden");
             document.getElementById("resultsSection").classList.add("hidden");
             document.getElementById("loadingIndicator").classList.remove("hidden");
 
-            // CHECK 1: Agar models load nahi hue hain, toh auto-load karo
             let selectedModel = document.getElementById("modelSelect").value;
             if (!selectedModel || selectedModel === "waiting") {
-                document.getElementById("loadingText").innerText = "Finding a working AI model for your key...";
+                document.getElementById("loadingText").innerText = "Checking valid AI model...";
                 selectedModel = await fetchAvailableModels(apiKey);
-                
                 if (!selectedModel || selectedModel === "waiting") {
-                    alert("Your API Key is invalid or does not have access to any Gemini models. Please create a new API key from Google AI Studio.");
-                    resetUI();
-                    return;
+                    alert("Your API Key is invalid. Check Google AI Studio.");
+                    resetUI(); return;
                 }
             }
 
@@ -257,7 +276,7 @@
 
         async function callGeminiAPI(prompt, base64Image, modelName, apiKey, retryCount) {
             const friendlyName = modelName.replace("models/", "");
-            document.getElementById("loadingText").innerText = `Sending frame to ${friendlyName}...`;
+            document.getElementById("loadingText").innerText = `Sending to ${friendlyName}...`;
             
             const url = `https://generativelanguage.googleapis.com/v1beta/${modelName}:generateContent?key=${apiKey}`;
             const requestBody = JSON.stringify({ contents: [{ parts: [ { text: prompt }, { inline_data: { mime_type: "image/jpeg", data: base64Image } } ] }] });
@@ -272,29 +291,24 @@
                 const data = await response.json();
                 
                 if (data.error) {
-                    // Agar server overloaded hai, toh doosra model try karega
                     if(data.error.message.includes("high demand") || data.error.message.includes("overloaded") || data.error.message.includes("unavailable")) {
                         const selectEl = document.getElementById("modelSelect");
-                        
                         if (retryCount < selectEl.options.length - 1) {
                             let nextIndex = selectEl.selectedIndex + 1;
                             if(nextIndex >= selectEl.options.length) nextIndex = 0; 
                             
                             selectEl.selectedIndex = nextIndex;
                             let nextModel = selectEl.options[nextIndex].value;
-                            
-                            document.getElementById("loadingText").innerText = `Model busy! Switching to ${nextModel.replace("models/","")}...`;
+                            document.getElementById("loadingText").innerText = `Busy! Switching to ${nextModel.replace("models/","")}...`;
                             
                             return await callGeminiAPI(prompt, base64Image, nextModel, apiKey, retryCount + 1);
                         } else {
-                            alert("All available models on your API key are currently busy! Google's servers are overloaded. Please wait 5 minutes and try again.");
-                            resetUI();
-                            return;
+                            alert("All AI Models are currently busy! Please wait a few minutes.");
+                            resetUI(); return;
                         }
                     } else {
                         alert("API Error: " + data.error.message);
-                        resetUI();
-                        return; 
+                        resetUI(); return; 
                     }
                 }
 
@@ -309,7 +323,6 @@
                 document.getElementById("loadingIndicator").classList.add("hidden");
                 document.getElementById("resultsSection").classList.remove("hidden");
             } catch (error) {
-                console.error(error);
                 alert("Network error. Try again.");
                 resetUI();
             }
@@ -339,4 +352,15 @@
         async function refineMetadata() {
             const userInst = document.getElementById("chatInput").value;
             if (!userInst) return;
-            doc
+            document.getElementById("loadingIndicator").classList.remove("hidden");
+            document.getElementById("resultsSection").classList.add("hidden");
+            
+            const prompt = `Update this metadata. Instruction: "${userInst}". Current Title: "${document.getElementById("resTitle").value}". Return STRICTLY in JSON: {"title": "...", "description": "...", "tags": "..."}`;
+            const apiKey = localStorage.getItem("gemini_api_key") || document.getElementById("apiKeyInput").value;
+            const selectedModel = document.getElementById("modelSelect").value;
+            
+            await callGeminiAPI(prompt, currentImageBase64, selectedModel, apiKey, 0);
+        }
+    </script>
+</body>
+</html>
