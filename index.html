@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TubeGenius AI v15.0 - Vision Fix Edition</title>
+    <title>Genratetag - AI Video Metadata & Thumbnail Generator</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -12,48 +12,48 @@
         .glass-panel { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #1e293b; }
-        ::-webkit-scrollbar-thumb { background: #8b5cf6; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #6366f1; border-radius: 4px; }
     </style>
 </head>
 <body class="min-h-screen">
 
     <!-- AUTHENTICATION SECTION -->
     <div id="authSection" class="min-h-screen flex items-center justify-center p-6">
-        <div class="glass-panel p-8 rounded-xl w-full max-w-md shadow-2xl flex flex-col gap-5 border-t-4 border-t-violet-500">
+        <div class="glass-panel p-8 rounded-xl w-full max-w-md shadow-2xl flex flex-col gap-5 border-t-4 border-t-indigo-500">
             <div class="text-center mb-2">
-                <i class="fab fa-youtube text-5xl text-red-500 mb-4 drop-shadow-[0_0_10px_rgba(239,68,68,0.8)]"></i>
-                <h2 id="authTitle" class="text-2xl font-bold text-white">TubeGenius <span class="bg-violet-600 text-white text-xs px-2 py-1 rounded ml-2">v15.0</span></h2>
+                <i class="fas fa-tags text-5xl text-indigo-500 mb-4 drop-shadow-[0_0_10px_rgba(99,102,241,0.8)]"></i>
+                <h2 id="authTitle" class="text-2xl font-bold text-white">Genratetag</h2>
                 <p id="authSubtitle" class="text-sm text-slate-400 mt-1">Please login to continue.</p>
             </div>
             
             <div class="flex flex-col gap-4">
-                <input type="email" id="emailInput" placeholder="Email Address" class="w-full bg-slate-800 border border-slate-600 rounded px-4 py-3 focus:outline-none focus:border-violet-500 transition">
-                <input type="password" id="passwordInput" placeholder="Password" class="w-full bg-slate-800 border border-slate-600 rounded px-4 py-3 focus:outline-none focus:border-violet-500 transition" onkeypress="if(event.key === 'Enter') handleAuth()">
+                <input type="email" id="emailInput" placeholder="Email Address" class="w-full bg-slate-800 border border-slate-600 rounded px-4 py-3 focus:outline-none focus:border-indigo-500 transition">
+                <input type="password" id="passwordInput" placeholder="Password" class="w-full bg-slate-800 border border-slate-600 rounded px-4 py-3 focus:outline-none focus:border-indigo-500 transition" onkeypress="if(event.key === 'Enter') handleAuth()">
                 <div id="authMessage" class="hidden text-center text-sm font-semibold p-2 rounded"></div>
-                <button id="authBtn" onclick="handleAuth()" class="w-full bg-violet-600 hover:bg-violet-500 text-white font-bold py-3 px-4 rounded-lg shadow-lg transition mt-2">Login</button>
+                <button id="authBtn" onclick="handleAuth()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 px-4 rounded-lg shadow-lg transition mt-2">Login</button>
             </div>
             <div class="text-center text-sm text-slate-400 mt-2" id="authSwitchText">
-                Don't have an account? <span class="text-violet-400 cursor-pointer hover:underline font-semibold" onclick="toggleAuthMode()">Register here</span>
+                Don't have an account? <span class="text-indigo-400 cursor-pointer hover:underline font-semibold" onclick="toggleAuthMode()">Register here</span>
             </div>
         </div>
     </div>
 
     <!-- MAIN APP SECTION -->
     <div id="mainApp" class="hidden min-h-screen flex flex-col">
-        <header class="glass-panel sticky top-0 z-50 px-6 py-4 flex justify-between items-center shadow-lg border-b-2 border-b-violet-500 flex-wrap gap-4">
-            <div class="flex items-center gap-2 text-xl font-bold text-red-500">
-                <i class="fab fa-youtube"></i>
-                <span class="text-white">TubeGenius <span class="bg-violet-600 text-white text-xs px-2 py-1 rounded ml-1">v15.0</span></span>
+        <header class="glass-panel sticky top-0 z-50 px-6 py-4 flex justify-between items-center shadow-lg border-b-2 border-b-indigo-500 flex-wrap gap-4">
+            <div class="flex items-center gap-2 text-xl font-bold text-indigo-500">
+                <i class="fas fa-tags"></i>
+                <span class="text-white">Genratetag</span>
             </div>
             <div class="flex items-center gap-2 flex-wrap">
                 <button onclick="showHome()" class="bg-slate-700 hover:bg-slate-600 text-white px-3 py-1.5 rounded text-sm transition font-semibold" title="Home"><i class="fas fa-home"></i> <span class="hidden md:inline">Home</span></button>
-                <button onclick="showHistory()" class="bg-violet-600 hover:bg-violet-500 text-white px-3 py-1.5 rounded text-sm transition font-semibold" title="History"><i class="fas fa-history"></i> <span class="hidden md:inline">History</span></button>
+                <button onclick="showHistory()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded text-sm transition font-semibold" title="History"><i class="fas fa-history"></i> <span class="hidden md:inline">History</span></button>
                 
-                <select id="modelSelect" class="bg-slate-800 text-sm px-3 py-1.5 rounded border border-slate-600 focus:outline-none focus:border-violet-500 text-violet-300 font-semibold w-24 md:w-36">
-                    <option value="waiting">Wait...</option>
+                <select id="modelSelect" class="bg-slate-800 text-sm px-3 py-1.5 rounded border border-slate-600 focus:outline-none focus:border-indigo-500 text-indigo-300 font-semibold w-28 md:w-40">
+                    <option value="waiting">Finding models...</option>
                 </select>
-                <input type="password" id="apiKeyInput" placeholder="API Key..." class="bg-slate-800 text-sm px-3 py-1.5 rounded border border-slate-600 focus:outline-none focus:border-violet-500 w-24 md:w-36">
-                <button onclick="saveApiKey()" class="bg-blue-600 text-white px-3 py-1.5 rounded text-sm transition font-semibold"><i class="fas fa-save"></i></button>
+                <input type="password" id="apiKeyInput" placeholder="API Key..." class="bg-slate-800 text-sm px-3 py-1.5 rounded border border-slate-600 focus:outline-none focus:border-indigo-500 w-28 md:w-36">
+                <button onclick="saveApiKey()" class="bg-green-600 text-white px-3 py-1.5 rounded text-sm transition font-semibold" title="Save API Key"><i class="fas fa-save"></i></button>
                 <button onclick="logout()" class="bg-red-600 text-white px-3 py-1.5 rounded text-sm transition" title="Logout"><i class="fas fa-sign-out-alt"></i></button>
             </div>
         </header>
@@ -63,27 +63,26 @@
             <!-- HISTORY SECTION -->
             <section id="historySection" class="hidden glass-panel p-6 rounded-xl flex flex-col gap-4">
                 <div class="flex justify-between items-center border-b border-slate-700 pb-2">
-                    <h2 class="text-2xl font-bold text-white"><i class="fas fa-history text-violet-400 mr-2"></i>Your History</h2>
+                    <h2 class="text-2xl font-bold text-white"><i class="fas fa-history text-indigo-400 mr-2"></i>Your History</h2>
                     <button onclick="clearHistory()" class="text-sm bg-red-600 hover:bg-red-500 px-3 py-1 rounded text-white transition"><i class="fas fa-trash"></i> Clear</button>
                 </div>
-                <div id="historyGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-4">
-                    <!-- History Cards will be injected here -->
-                </div>
+                <div id="historyGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-4"></div>
             </section>
 
-            <section id="uploadSection" class="glass-panel p-10 rounded-xl text-center border-dashed border-2 border-slate-600 hover:border-violet-500 transition cursor-pointer flex flex-col items-center justify-center min-h-[300px]">
+            <!-- UPLOAD SECTION -->
+            <section id="uploadSection" class="glass-panel p-10 rounded-xl text-center border-dashed border-2 border-slate-600 hover:border-indigo-500 transition cursor-pointer flex flex-col items-center justify-center min-h-[300px]">
                 <input type="file" id="videoInput" accept="video/*" class="hidden" onchange="handleVideoUpload(event)">
-                <i class="fas fa-eye text-5xl text-violet-400 mb-4"></i>
-                <h2 class="text-2xl font-bold mb-2">Upload Video (Vision Fix)</h2>
-                <p class="text-slate-400 mb-4 text-sm">Automatically ignores non-image models and saves history!</p>
-                <button onclick="document.getElementById('videoInput').click()" class="bg-violet-600 hover:bg-violet-500 text-white px-6 py-3 rounded-lg font-bold shadow-lg transition mt-4">Select Video</button>
+                <i class="fas fa-cloud-upload-alt text-5xl text-indigo-400 mb-4"></i>
+                <h2 class="text-2xl font-bold mb-2">Upload Video to Generate Tags, Title & Thumbnail</h2>
+                <p class="text-slate-400 mb-4 text-sm">Select any MP4, WebM or MKV file. Fully compatible with all Gemini versions.</p>
+                <button onclick="document.getElementById('videoInput').click()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-3 rounded-lg font-bold shadow-lg transition mt-4">Select Video File</button>
             </section>
 
             <video id="hiddenVideo" class="hidden" preload="metadata" crossorigin="anonymous"></video>
             <canvas id="hiddenCanvas" class="hidden"></canvas>
 
             <div id="loadingIndicator" class="hidden text-center py-10 flex flex-col items-center">
-                <i class="fas fa-circle-notch fa-spin text-4xl text-violet-500 mb-3"></i>
+                <i class="fas fa-circle-notch fa-spin text-4xl text-indigo-500 mb-3"></i>
                 <p class="text-lg text-slate-300 font-semibold" id="loadingText">Processing...</p>
             </div>
 
@@ -97,26 +96,27 @@
                     <div class="glass-panel p-4 rounded-xl flex flex-col items-center">
                         <h3 class="text-sm font-semibold text-slate-400 mb-2 w-full text-left uppercase">Generated Thumbnail</h3>
                         <canvas id="thumbnailCanvas" class="w-full rounded-lg mb-4 bg-black"></canvas>
-                        <button onclick="downloadThumbnail()" class="w-full bg-violet-600 hover:bg-violet-500 text-white px-4 py-2 rounded font-bold"><i class="fas fa-download"></i> Download</button>
+                        <button onclick="downloadThumbnail()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded font-bold"><i class="fas fa-download"></i> Download Thumbnail</button>
                     </div>
                 </div>
                 <div class="w-full md:w-2/3 flex flex-col gap-6">
                     <div class="glass-panel p-6 rounded-xl flex flex-col gap-4">
                         <label class="text-sm font-semibold text-slate-400">YouTube Title</label>
-                        <input type="text" id="resTitle" class="w-full bg-slate-800 border rounded px-3 py-2 font-bold text-lg border-slate-600 focus:border-violet-500 focus:outline-none">
+                        <input type="text" id="resTitle" class="w-full bg-slate-800 border rounded px-3 py-2 font-bold text-lg border-slate-600 focus:border-indigo-500 focus:outline-none">
                         
                         <label class="text-sm font-semibold text-slate-400">Description</label>
-                        <textarea id="resDesc" rows="6" class="w-full bg-slate-800 border rounded px-3 py-2 border-slate-600 focus:border-violet-500 focus:outline-none"></textarea>
+                        <textarea id="resDesc" rows="6" class="w-full bg-slate-800 border rounded px-3 py-2 border-slate-600 focus:border-indigo-500 focus:outline-none"></textarea>
                         
                         <label class="text-sm font-semibold text-slate-400">Tags</label>
-                        <textarea id="resTags" rows="2" class="w-full bg-slate-800 border rounded px-3 py-2 text-sm text-violet-400 border-slate-600 focus:border-violet-500 focus:outline-none"></textarea>
+                        <textarea id="resTags" rows="2" class="w-full bg-slate-800 border rounded px-3 py-2 text-sm text-indigo-400 border-slate-600 focus:border-indigo-500 focus:outline-none"></textarea>
                     </div>
                     
                     <div class="glass-panel p-6 rounded-xl flex flex-col" id="refineBox">
-                        <h3 class="font-bold mb-2 text-slate-300">Refine Results</h3>
+                        <h3 class="font-bold mb-2 text-slate-300"><i class="fas fa-magic text-yellow-400 mr-2"></i>Refine / Change Results</h3>
+                        <p class="text-xs text-slate-400 mb-3">Tell AI what to change (e.g. "Change thumbnail text to 'Amazing Ride'", "Make title shorter", "Add tech tags")</p>
                         <div class="flex gap-2">
-                            <input type="text" id="chatInput" placeholder="Make the title more clickbait..." class="flex-grow bg-slate-800 border border-slate-600 rounded-l px-4 py-2 focus:border-violet-500 focus:outline-none" onkeypress="if(event.key === 'Enter') refineMetadata()">
-                            <button onclick="refineMetadata()" class="bg-violet-600 text-white px-6 py-2 rounded-r font-bold">Update</button>
+                            <input type="text" id="chatInput" placeholder="Type your changes here..." class="flex-grow bg-slate-800 border border-slate-600 rounded-l px-4 py-2 focus:border-indigo-500 focus:outline-none" onkeypress="if(event.key === 'Enter') refineMetadata()">
+                            <button onclick="refineMetadata()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-2 rounded-r font-bold">Update</button>
                         </div>
                     </div>
                 </div>
@@ -143,18 +143,18 @@
             msgBox.innerHTML = msg;
             msgBox.className = type === 'error' 
                 ? "text-center text-sm font-semibold p-2 rounded bg-red-900/50 text-red-400 border border-red-500 mt-2" 
-                : "text-center text-sm font-semibold p-2 rounded bg-violet-900/50 text-violet-400 border border-violet-500 mt-2";
+                : "text-center text-sm font-semibold p-2 rounded bg-indigo-900/50 text-indigo-400 border border-indigo-500 mt-2";
             msgBox.classList.remove('hidden');
         }
 
         function toggleAuthMode() {
             isLoginMode = !isLoginMode;
-            document.getElementById('authTitle').innerHTML = isLoginMode ? 'TubeGenius <span class="bg-violet-600 text-white text-xs px-2 py-1 rounded ml-2">v15.0</span>' : 'Create Account <span class="bg-violet-600 text-white text-xs px-2 py-1 rounded ml-2">v15.0</span>';
+            document.getElementById('authTitle').innerText = isLoginMode ? 'Genratetag' : 'Create Account';
             document.getElementById('authSubtitle').innerText = isLoginMode ? 'Please login to continue.' : 'Create a brand new account.';
             document.getElementById('authBtn').innerText = isLoginMode ? 'Login' : 'Register';
             document.getElementById('authSwitchText').innerHTML = isLoginMode 
-                ? 'Don\'t have an account? <span class="text-violet-400 cursor-pointer hover:underline font-semibold" onclick="toggleAuthMode()">Register here</span>'
-                : 'Already have an account? <span class="text-violet-400 cursor-pointer hover:underline font-semibold" onclick="toggleAuthMode()">Login here</span>';
+                ? 'Don\'t have an account? <span class="text-indigo-400 cursor-pointer hover:underline font-semibold" onclick="toggleAuthMode()">Register here</span>'
+                : 'Already have an account? <span class="text-indigo-400 cursor-pointer hover:underline font-semibold" onclick="toggleAuthMode()">Login here</span>';
             showAuthMessage(""); 
         }
 
@@ -163,7 +163,7 @@
             const password = document.getElementById('passwordInput').value.trim();
             if (!email || !password) return showAuthMessage("⚠️ Enter both email and password!", "error");
 
-            let users = JSON.parse(localStorage.getItem('tubegenius_users') || '[]');
+            let users = JSON.parse(localStorage.getItem('genratetag_users') || '[]');
             if (isLoginMode) {
                 if (users.find(u => u.email === email && u.password === password)) {
                     showAuthMessage("✅ Logging in...", "success");
@@ -173,7 +173,7 @@
             } else {
                 if(users.find(u => u.email === email)) return showAuthMessage("⚠️ Email already registered! Switch to Login.", "error");
                 users.push({ email, password });
-                localStorage.setItem('tubegenius_users', JSON.stringify(users));
+                localStorage.setItem('genratetag_users', JSON.stringify(users));
                 showAuthMessage("✅ Registered successfully! You can now login.", "success");
                 setTimeout(() => toggleAuthMode(), 1500);
             }
@@ -187,7 +187,7 @@
 
         function logout() {
             localStorage.removeItem('currentUser');
-            document.getElementById('authSection').classList.remove('hidden');
+            document.getElementById('authSection').classList.add('hidden');
             document.getElementById('mainApp').classList.add('hidden');
             document.getElementById('emailInput').value = "";
             document.getElementById('passwordInput').value = "";
@@ -210,17 +210,21 @@
         function saveToHistory(title, desc, tags, thumbnailData) {
             const email = localStorage.getItem('currentUser');
             if(!email) return;
-            let history = JSON.parse(localStorage.getItem('tubegenius_history_' + email) || '[]');
-            history.unshift({
-                id: Date.now(),
-                date: new Date().toLocaleString(),
-                title: title,
-                desc: desc,
-                tags: tags,
-                image: thumbnailData
-            });
-            if (history.length > 10) history = history.slice(0, 10);
-            localStorage.setItem('tubegenius_history_' + email, JSON.stringify(history));
+            try {
+                let history = JSON.parse(localStorage.getItem('genratetag_history_' + email) || '[]');
+                history.unshift({
+                    id: Date.now(),
+                    date: new Date().toLocaleString(),
+                    title: title,
+                    desc: desc,
+                    tags: tags,
+                    image: thumbnailData
+                });
+                if (history.length > 8) history = history.slice(0, 8);
+                localStorage.setItem('genratetag_history_' + email, JSON.stringify(history));
+            } catch(e) {
+                console.warn("Storage full.");
+            }
         }
 
         function showHistory() {
@@ -233,7 +237,7 @@
             historySection.classList.remove("hidden");
             
             const email = localStorage.getItem('currentUser');
-            let history = JSON.parse(localStorage.getItem('tubegenius_history_' + email) || '[]');
+            let history = JSON.parse(localStorage.getItem('genratetag_history_' + email) || '[]');
             
             if (history.length === 0) {
                 grid.innerHTML = `<div class="col-span-full text-center py-10 text-slate-400">No history found. Generate some metadata first!</div>`;
@@ -241,11 +245,11 @@
             }
 
             grid.innerHTML = history.map((item, index) => `
-                <div class="glass-panel rounded-lg overflow-hidden border border-slate-700 hover:border-violet-500 transition cursor-pointer group" onclick="loadHistoryItem(${index})">
+                <div class="glass-panel rounded-lg overflow-hidden border border-slate-700 hover:border-indigo-500 transition cursor-pointer group" onclick="loadHistoryItem(${index})">
                     <img src="${item.image}" class="w-full h-40 object-cover opacity-80 group-hover:opacity-100 transition">
                     <div class="p-4">
                         <h4 class="font-bold text-white text-sm line-clamp-2 mb-1">${item.title}</h4>
-                        <p class="text-xs text-violet-400"><i class="far fa-clock"></i> ${item.date}</p>
+                        <p class="text-xs text-indigo-400"><i class="far fa-clock"></i> ${item.date}</p>
                     </div>
                 </div>
             `).join('');
@@ -253,7 +257,7 @@
 
         function loadHistoryItem(index) {
             const email = localStorage.getItem('currentUser');
-            let history = JSON.parse(localStorage.getItem('tubegenius_history_' + email) || '[]');
+            let history = JSON.parse(localStorage.getItem('genratetag_history_' + email) || '[]');
             const item = history[index];
             if(!item) return;
 
@@ -277,18 +281,17 @@
                 ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
             };
             img.src = item.image;
-            document.getElementById("refineBox").classList.add("hidden");
         }
 
         function clearHistory() {
             if(confirm("Are you sure you want to delete all history?")) {
                 const email = localStorage.getItem('currentUser');
-                localStorage.removeItem('tubegenius_history_' + email);
+                localStorage.removeItem('genratetag_history_' + email);
                 showHistory();
             }
         }
 
-        // ================= API / MODEL LOGIC (VISION FIX) =================
+        // ================= MODEL FETCHER =================
         async function fetchAvailableModels(apiKey) {
             const selectEl = document.getElementById("modelSelect");
             selectEl.innerHTML = `<option value="waiting">Finding models...</option>`;
@@ -298,7 +301,6 @@
                 if (data.error) { selectEl.innerHTML = `<option value="waiting">Invalid Key</option>`; return null; }
                 
                 selectEl.innerHTML = "";
-                // STRCIT FILTERING: Remove TTS, Audio, Embeddings, only keep true vision-capable generation models
                 const validModels = data.models.filter(m => 
                     m.supportedGenerationMethods && 
                     m.supportedGenerationMethods.includes("generateContent") && 
@@ -346,7 +348,6 @@
             document.getElementById("historySection").classList.add("hidden");
             document.getElementById("resultsSection").classList.add("hidden");
             document.getElementById("loadingIndicator").classList.remove("hidden");
-            document.getElementById("refineBox").classList.remove("hidden");
 
             let selectedModel = document.getElementById("modelSelect").value;
             if (!selectedModel || selectedModel === "waiting") {
@@ -382,7 +383,13 @@
                     ctx.drawImage(previewVideo, 0, 0, canvas.width, canvas.height);
                     currentImageBase64 = canvas.toDataURL("image/jpeg", 0.9).split(",")[1]; 
                     
-                    const prompt = `You are a YouTube SEO expert. Analyze this video frame. Generate a highly engaging YouTube Title, a detailed SEO optimized description, and comma-separated tags. Return STRICTLY in JSON: {"title": "...", "description": "...", "tags": "..."}`;
+                    const prompt = `You are a professional YouTube SEO expert and thumbnail designer. Analyze this video frame. Generate:
+                    1. A highly catchy YouTube Title.
+                    2. A detailed SEO optimized description.
+                    3. Comma-separated tags.
+                    4. A short punchy catchy text phrase (max 4-5 words) that should be displayed bold on the YouTube thumbnail.
+                    Return STRICTLY in JSON format: {"title": "...", "description": "...", "tags": "...", "thumbText": "..."}`;
+                    
                     await callGeminiAPI(prompt, currentImageBase64, selectedModel, apiKey, 0);
                 }, 600);
             };
@@ -390,7 +397,7 @@
 
         async function callGeminiAPI(prompt, base64Image, modelName, apiKey, retryCount) {
             const friendlyName = modelName.replace("models/", "");
-            document.getElementById("loadingText").innerText = `Sending to ${friendlyName}...`;
+            document.getElementById("loadingText").innerText = `Analyzing with ${friendlyName}...`;
             
             const url = `https://generativelanguage.googleapis.com/v1beta/${modelName}:generateContent?key=${apiKey}`;
             const requestBody = JSON.stringify({ contents: [{ parts: [ { text: prompt }, { inline_data: { mime_type: "image/jpeg", data: base64Image } } ] }] });
@@ -423,13 +430,13 @@
                 document.getElementById("resDesc").value = resultJSON.description || "";
                 document.getElementById("resTags").value = resultJSON.tags || "";
                 
-                createThumbnail(resultJSON.title || "Awesome Video");
+                createThumbnail(resultJSON.thumbText || resultJSON.title || "Awesome Video");
 
                 document.getElementById("loadingIndicator").classList.add("hidden");
                 document.getElementById("resultsSection").classList.remove("hidden");
 
                 setTimeout(() => {
-                    const thumbData = document.getElementById("thumbnailCanvas").toDataURL("image/jpeg", 0.5);
+                    const thumbData = document.getElementById("thumbnailCanvas").toDataURL("image/jpeg", 0.6);
                     saveToHistory(resultJSON.title, resultJSON.description, resultJSON.tags, thumbData);
                 }, 500);
 
@@ -438,44 +445,123 @@
             }
         }
 
-        function createThumbnail(title) {
+        // Professional YouTube Style Thumbnail Generator (like Gemini/Canva AI)
+        function createThumbnail(mainText) {
             const canvas = document.getElementById("thumbnailCanvas");
             const hiddenCanvas = document.getElementById("hiddenCanvas");
             canvas.width = 1280; canvas.height = 720;
             const ctx = canvas.getContext("2d");
+            
+            // Draw background frame
             ctx.drawImage(hiddenCanvas, 0, 0, canvas.width, canvas.height);
             
+            // Modern Pro Vignette & Bottom Gradient overlay
             const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-            gradient.addColorStop(0, "transparent"); gradient.addColorStop(0.5, "transparent");
-            gradient.addColorStop(1, "rgba(0,0,0,0.9)");
-            ctx.fillStyle = gradient; ctx.fillRect(0, 0, canvas.width, canvas.height);
+            gradient.addColorStop(0, "rgba(0,0,0,0.3)");
+            gradient.addColorStop(0.6, "transparent");
+            gradient.addColorStop(1, "rgba(0,0,0,0.85)");
+            ctx.fillStyle = gradient; 
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // YouTube Style High-Contrast Text Box / Banner
+            ctx.textAlign = "center";
+            ctx.font = "900 65px 'Inter', sans-serif";
             
-            ctx.fillStyle = "white"; ctx.font = "bold 70px Inter, sans-serif";
-            ctx.textAlign = "center"; ctx.shadowColor = "black"; ctx.shadowBlur = 15;
-            ctx.shadowOffsetX = 3; ctx.shadowOffsetY = 3;
-            
-            const maxText = title.substring(0, 50) + (title.length > 50 ? "..." : "");
-            ctx.fillText(maxText, canvas.width/2, canvas.height - 80);
+            const words = mainText.toUpperCase().split(' ');
+            let line = '';
+            let lines = [];
+            for(let i = 0; i < words.length; i++) {
+                let testLine = line + words[i] + ' ';
+                if(ctx.measureText(testLine).width > canvas.width - 200 && i > 0) {
+                    lines.push(line);
+                    line = words[i] + ' ';
+                } else {
+                    line = testLine;
+                }
+            }
+            lines.push(line);
+
+            let startY = canvas.height - (lines.length * 80) - 40;
+
+            lines.forEach((l, idx) => {
+                let textY = startY + (idx * 80);
+                
+                // Draw thick text shadow/border for pro look
+                ctx.lineWidth = 12;
+                ctx.strokeStyle = "black";
+                ctx.fillStyle = idx === 1 ? "#38bdf8" : "white"; // Accent color for second line
+                
+                ctx.strokeText(l.trim(), canvas.width/2, textY);
+                ctx.fillText(l.trim(), canvas.width/2, textY);
+            });
         }
 
         function downloadThumbnail() {
             const link = document.createElement("a");
             link.download = "youtube-thumbnail.jpg";
-            link.href = document.getElementById("thumbnailCanvas").toDataURL("image/jpeg", 0.9);
+            link.href = document.getElementById("thumbnailCanvas").toDataURL("image/jpeg", 0.95);
             link.click();
         }
 
+        // ================= REFINE / CHANGE LOGIC =================
         async function refineMetadata() {
             const userInst = document.getElementById("chatInput").value;
             if (!userInst) return;
+            
             document.getElementById("loadingIndicator").classList.remove("hidden");
             document.getElementById("resultsSection").classList.add("hidden");
+            document.getElementById("loadingText").innerText = "Updating metadata & thumbnail as requested...";
             
-            const prompt = `Update this metadata. Instruction: "${userInst}". Current Title: "${document.getElementById("resTitle").value}". Return STRICTLY in JSON: {"title": "...", "description": "...", "tags": "..."}`;
+            const currentTitle = document.getElementById("resTitle").value;
+            const currentDesc = document.getElementById("resDesc").value;
+            const currentTags = document.getElementById("resTags").value;
+
+            const prompt = `You are a professional YouTube SEO expert and thumbnail designer. 
+            Current Title: "${currentTitle}"
+            Current Description: "${currentDesc}"
+            Current Tags: "${currentTags}"
+            
+            User instruction for changes: "${userInst}"
+            
+            Based on the video frame image and the user instruction, generate updated metadata and a fresh thumbnail text phrase.
+            Return STRICTLY in JSON format: {"title": "...", "description": "...", "tags": "...", "thumbText": "..."}`;
+            
             const apiKey = localStorage.getItem("gemini_api_key") || document.getElementById("apiKeyInput").value;
             const selectedModel = document.getElementById("modelSelect").value;
             
-            await callGeminiAPI(prompt, currentImageBase64, selectedModel, apiKey, 0);
+            const url = `https://generativelanguage.googleapis.com/v1beta/${selectedModel}:generateContent?key=${apiKey}`;
+            const requestBody = JSON.stringify({ contents: [{ parts: [ { text: prompt }, { inline_data: { mime_type: "image/jpeg", data: currentImageBase64 } } ] }] });
+
+            try {
+                const response = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: requestBody });
+                const data = await response.json();
+                
+                if (data.error) {
+                    alert("API Error: " + data.error.message);
+                    resetUI(); return;
+                }
+
+                let textResponse = data.candidates[0].content.parts[0].text.replace(/```json/g, '').replace(/```/g, '').trim();
+                const resultJSON = JSON.parse(textResponse);
+
+                document.getElementById("resTitle").value = resultJSON.title || currentTitle;
+                document.getElementById("resDesc").value = resultJSON.description || currentDesc;
+                document.getElementById("resTags").value = resultJSON.tags || currentTags;
+                
+                createThumbnail(resultJSON.thumbText || resultJSON.title || currentTitle);
+
+                document.getElementById("loadingIndicator").classList.add("hidden");
+                document.getElementById("resultsSection").classList.remove("hidden");
+                document.getElementById("chatInput").value = "";
+
+                setTimeout(() => {
+                    const thumbData = document.getElementById("thumbnailCanvas").toDataURL("image/jpeg", 0.6);
+                    saveToHistory(resultJSON.title, resultJSON.description, resultJSON.tags, thumbData);
+                }, 500);
+
+            } catch (error) {
+                alert("Failed to update. Try again."); resetUI();
+            }
         }
     </script>
 </body>
