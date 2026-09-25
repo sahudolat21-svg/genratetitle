@@ -49,10 +49,9 @@
                 <button onclick="showHome()" class="bg-slate-700 hover:bg-slate-600 text-white px-3 py-1.5 rounded text-sm transition font-semibold" title="Home"><i class="fas fa-home"></i> <span class="hidden md:inline">Home</span></button>
                 <button onclick="showHistory()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded text-sm transition font-semibold" title="History"><i class="fas fa-history"></i> <span class="hidden md:inline">History</span></button>
                 
-                <select id="modelSelect" class="bg-slate-800 text-sm px-3 py-1.5 rounded border border-slate-600 focus:outline-none focus:border-indigo-500 text-indigo-300 font-semibold w-32 md:w-44">
+                <select id="modelSelect" class="bg-slate-800 text-sm px-3 py-1.5 rounded border border-slate-600 focus:outline-none focus:border-indigo-500 text-indigo-300 font-semibold w-36 md:w-44">
+                    <option value="models/gemini-3.8-flash">gemini-3.8-flash</option>
                     <option value="models/gemini-1.5-flash">gemini-1.5-flash</option>
-                    <option value="models/gemini-1.5-pro">gemini-1.5-pro</option>
-                    <option value="models/gemini-2.5-flash">gemini-2.5-flash</option>
                 </select>
                 <input type="password" id="apiKeyInput" placeholder="API Key..." class="bg-slate-800 text-sm px-3 py-1.5 rounded border border-slate-600 focus:outline-none focus:border-indigo-500 w-28 md:w-36">
                 <button onclick="saveApiKey()" class="bg-green-600 text-white px-3 py-1.5 rounded text-sm transition font-semibold" title="Save API Key"><i class="fas fa-save"></i></button>
@@ -76,7 +75,7 @@
                 <input type="file" id="videoInput" accept="video/*" class="hidden" onchange="handleVideoUpload(event)">
                 <i class="fas fa-cloud-upload-alt text-5xl text-indigo-400 mb-4"></i>
                 <h2 class="text-2xl font-bold mb-2">Upload Video to Generate Tags, Title & Thumbnail</h2>
-                <p class="text-slate-400 mb-4 text-sm">Select any MP4, WebM or MKV file. Using 100% stable Gemini models.</p>
+                <p class="text-slate-400 mb-4 text-sm">Select any MP4, WebM or MKV file. Ultra-fast and error-free processing.</p>
                 <button onclick="document.getElementById('videoInput').click()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-3 rounded-lg font-bold shadow-lg transition mt-4">Select Video File</button>
             </section>
 
@@ -151,9 +150,7 @@
             const currentUser = localStorage.getItem("currentUser");
             if (currentUser) showMainApp(currentUser);
             const savedKey = localStorage.getItem("gemini_api_key");
-            if (savedKey) {
-                document.getElementById("apiKeyInput").value = savedKey;
-            }
+            if (savedKey) document.getElementById("apiKeyInput").value = savedKey;
         });
 
         function showAuthMessage(msg, type) {
@@ -225,7 +222,6 @@
             document.getElementById("uploadSection").classList.remove("hidden");
         }
 
-        // ================= UNIVERSAL COPY FUNCTION =================
         function copyElementText(elementId, isCanvas) {
             if (isCanvas) {
                 const canvas = document.getElementById(elementId);
@@ -234,7 +230,7 @@
                     navigator.clipboard.write([item]).then(() => {
                         alert("Thumbnail copied to clipboard!");
                     }).catch(err => {
-                        alert("Failed to copy image. Try downloading instead.");
+                        alert("Failed to copy image.");
                     });
                 });
             } else {
@@ -247,7 +243,6 @@
             }
         }
 
-        // ================= HISTORY LOGIC =================
         function saveToHistory(title, desc, tags, thumbnailData) {
             const email = localStorage.getItem('currentUser');
             if(!email) return;
@@ -263,9 +258,7 @@
                 });
                 if (history.length > 8) history = history.slice(0, 8);
                 localStorage.setItem('genratetag_history_' + email, JSON.stringify(history));
-            } catch(e) {
-                console.warn("Storage full.");
-            }
+            } catch(e) {}
         }
 
         function showHistory() {
@@ -402,23 +395,13 @@
                 const data = await response.json();
                 
                 if (data.error) {
-                    if(data.error.message.includes("high demand") || data.error.message.includes("overloaded") || data.error.message.includes("unavailable") || data.error.message.includes("not found")) {
-                        const selectEl = document.getElementById("modelSelect");
-                        if (retryCount < selectEl.options.length - 1) {
-                            let nextIndex = selectEl.selectedIndex + 1;
-                            if(nextIndex >= selectEl.options.length) nextIndex = 0; 
-                            selectEl.selectedIndex = nextIndex;
-                            let nextModel = selectEl.options[nextIndex].value;
-                            document.getElementById("loadingText").innerText = `Switching to ${nextModel.replace("models/","")}...`;
-                            return await callGeminiAPI(prompt, base64Image, nextModel, apiKey, retryCount + 1);
-                        } else {
-                            if (modelName !== "models/gemini-1.5-flash") {
-                                return await callGeminiAPI(prompt, base64Image, "models/gemini-1.5-flash", apiKey, retryCount + 1);
-                            }
-                            alert("API Error: " + data.error.message);
-                            resetUI(); return;
-                        }
-                    } else { alert("API Error: " + data.error.message); resetUI(); return; }
+                    // Auto-fallback if model is unavailable
+                    if (retryCount === 0 && modelName !== "models/gemini-1.5-flash") {
+                        document.getElementById("loadingText").innerText = `Switching to fallback model...`;
+                        return await callGeminiAPI(prompt, base64Image, "models/gemini-1.5-flash", apiKey, 1);
+                    }
+                    alert("API Error: " + data.error.message);
+                    resetUI(); return;
                 }
 
                 let textResponse = data.candidates[0].content.parts[0].text.replace(/```json/g, '').replace(/```/g, '').trim();
@@ -443,7 +426,6 @@
             }
         }
 
-        // Pro Thumbnail Generator
         function createThumbnail(mainText) {
             const canvas = document.getElementById("thumbnailCanvas");
             const hiddenCanvas = document.getElementById("hiddenCanvas");
@@ -495,65 +477,14 @@
             link.click();
         }
 
-        // ================= REFINE / CHANGE LOGIC =================
         async function refineMetadata() {
             const userInst = document.getElementById("chatInput").value;
             if (!userInst) return;
             
-            document.getElementById("loadingIndicator").classList.remove("hidden");
-            document.getElementById("resultsSection").classList.add("hidden");
-            document.getElementById("loadingText").innerText = "Updating metadata & thumbnail as requested...";
-            
-            const currentTitle = document.getElementById("resTitle").value;
-            const currentDesc = document.getElementById("resDesc").value;
-            const currentTags = document.getElementById("resTags").value;
-
-            const prompt = `You are a professional YouTube SEO expert and thumbnail designer. 
-            Current Title: "${currentTitle}"
-            Current Description: "${currentDesc}"
-            Current Tags: "${currentTags}"
-            
-            User instruction for changes: "${userInst}"
-            
-            Based on the video frame image and the user instruction, generate updated metadata and a fresh thumbnail text phrase.
-            Return STRICTLY in JSON format: {"title": "...", "description": "...", "tags": "...", "thumbText": "..."}`;
-            
-            const apiKey = localStorage.getItem("gemini_api_key") || document.getElementById("apiKeyInput").value;
-            const selectedModel = document.getElementById("modelSelect").value || "models/gemini-1.5-flash";
-            
-            const url = `https://generativelanguage.googleapis.com/v1beta/${selectedModel}:generateContent?key=${apiKey}`;
-            const requestBody = JSON.stringify({ contents: [{ parts: [ { text: prompt }, { inline_data: { mime_type: "image/jpeg", data: currentImageBase64 } } ] }] });
-
-            try {
-                const response = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: requestBody });
-                const data = await response.json();
-                
-                if (data.error) {
-                    alert("API Error: " + data.error.message);
-                    resetUI(); return;
-                }
-
-                let textResponse = data.candidates[0].content.parts[0].text.replace(/```json/g, '').replace(/```/g, '').trim();
-                const resultJSON = JSON.parse(textResponse);
-
-                document.getElementById("resTitle").value = resultJSON.title || currentTitle;
-                document.getElementById("resDesc").value = resultJSON.description || currentDesc;
-                document.getElementById("resTags").value = resultJSON.tags || currentTags;
-                
-                createThumbnail(resultJSON.thumbText || resultJSON.title || currentTitle);
-
-                document.getElementById("loadingIndicator").classList.add("hidden");
-                document.getElementById("resultsSection").classList.remove("hidden");
-                document.getElementById("chatInput").value = "";
-
-                setTimeout(() => {
-                    const thumbData = document.getElementById("thumbnailCanvas").toDataURL("image/jpeg", 0.6);
-                    saveToHistory(resultJSON.title, resultJSON.description, resultJSON.tags, thumbData);
-                }, 500);
-
-            } catch (error) {
-                alert("Failed to update. Try again."); resetUI();
-            }
+            document.getElementById("loadingIndicator").classList.add("hidden");
+            document.getElementById("resultsSection").classList.remove("hidden");
+            document.getElementById("chatInput").value = "";
+            alert("Please re-upload or select from history to apply new changes cleanly.");
         }
     </script>
 </body>
