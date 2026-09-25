@@ -18,147 +18,250 @@
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
-        /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #1e293b; }
         ::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #64748b; }
     </style>
 </head>
-<body class="min-h-screen flex flex-col">
+<body class="min-h-screen">
 
-    <!-- Header -->
-    <header class="glass-panel sticky top-0 z-50 px-6 py-4 flex justify-between items-center shadow-lg">
-        <div class="flex items-center gap-2 text-xl font-bold text-red-500">
-            <i class="fab fa-youtube"></i>
-            <span class="text-white">TubeGenius AI</span>
-        </div>
-        <div class="flex items-center gap-2">
-            <input type="password" id="apiKeyInput" placeholder="Enter Gemini API Key..." 
-                class="bg-slate-800 text-sm px-3 py-1.5 rounded border border-slate-600 focus:outline-none focus:border-red-500 w-64"
-                title="Get it from Google AI Studio">
-            <button onclick="saveApiKey()" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded text-sm transition">Save Key</button>
-        </div>
-    </header>
-
-    <!-- Main Content -->
-    <main class="flex-grow p-6 max-w-6xl mx-auto w-full flex flex-col gap-6">
-        
-        <!-- Video Upload Section -->
-        <section id="uploadSection" class="glass-panel p-10 rounded-xl text-center border-dashed border-2 border-slate-600 hover:border-red-500 transition cursor-pointer flex flex-col items-center justify-center min-h-[300px]">
-            <input type="file" id="videoInput" accept="video/*" class="hidden" onchange="handleVideoUpload(event)">
-            <i class="fas fa-cloud-upload-alt text-5xl text-slate-400 mb-4"></i>
-            <h2 class="text-2xl font-bold mb-2">Upload Video to Generate Magic</h2>
-            <p class="text-slate-400 mb-4">Select an MP4, WebM, or MKV file. We will extract a frame and analyze it.</p>
-            <button onclick="document.getElementById('videoInput').click()" class="bg-red-600 hover:bg-red-500 text-white px-6 py-3 rounded-lg font-semibold shadow-lg transition transform hover:scale-105">
-                Select Video File
-            </button>
-        </section>
-
-        <!-- Hidden Video Element for Frame Extraction -->
-        <video id="hiddenVideo" class="hidden" preload="metadata" crossorigin="anonymous"></video>
-        <canvas id="hiddenCanvas" class="hidden"></canvas>
-
-        <!-- Loading State -->
-        <div id="loadingIndicator" class="hidden text-center py-10">
-            <i class="fas fa-spinner fa-spin text-4xl text-red-500 mb-3"></i>
-            <p class="text-lg text-slate-300" id="loadingText">Analyzing video and generating content...</p>
-        </div>
-
-        <!-- Results Section (Hidden initially) -->
-        <div id="resultsSection" class="hidden flex flex-col md:flex-row gap-6">
+    <!-- AUTHENTICATION SECTION (Login & Register) -->
+    <div id="authSection" class="min-h-screen flex items-center justify-center p-6">
+        <div class="glass-panel p-8 rounded-xl w-full max-w-md shadow-2xl flex flex-col gap-5">
+            <div class="text-center mb-2">
+                <i class="fab fa-youtube text-5xl text-red-500 mb-4 drop-shadow-[0_0_10px_rgba(239,68,68,0.8)]"></i>
+                <h2 id="authTitle" class="text-2xl font-bold text-white">Login to TubeGenius</h2>
+                <p id="authSubtitle" class="text-sm text-slate-400 mt-1">Welcome back! Please enter your details.</p>
+            </div>
             
-            <!-- Left Column: Video & Thumbnail -->
-            <div class="w-full md:w-1/3 flex flex-col gap-6">
-                <!-- Video Player -->
-                <div class="glass-panel p-4 rounded-xl">
-                    <h3 class="font-bold mb-2 text-slate-300">Video Preview</h3>
-                    <video id="previewVideo" controls class="w-full rounded-lg bg-black"></video>
+            <div class="flex flex-col gap-4">
+                <div>
+                    <label class="text-sm font-semibold text-slate-400">Email Address</label>
+                    <input type="email" id="emailInput" placeholder="Enter your email" class="w-full bg-slate-800 border border-slate-600 rounded px-4 py-3 mt-1 focus:outline-none focus:border-red-500 transition">
                 </div>
-                
-                <!-- Thumbnail Generated -->
-                <div class="glass-panel p-4 rounded-xl flex flex-col items-center">
-                    <h3 class="font-bold mb-2 text-slate-300 w-full text-left">Generated Thumbnail</h3>
-                    <canvas id="thumbnailCanvas" class="w-full rounded-lg mb-4 bg-black"></canvas>
-                    <button onclick="downloadThumbnail()" class="w-full bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded font-semibold transition flex items-center justify-center gap-2">
-                        <i class="fas fa-download"></i> Download Thumbnail
-                    </button>
+                <div>
+                    <label class="text-sm font-semibold text-slate-400">Password</label>
+                    <input type="password" id="passwordInput" placeholder="Enter your password" class="w-full bg-slate-800 border border-slate-600 rounded px-4 py-3 mt-1 focus:outline-none focus:border-red-500 transition" onkeypress="if(event.key === 'Enter') handleAuth()">
                 </div>
+                <button id="authBtn" onclick="handleAuth()" class="w-full bg-red-600 hover:bg-red-500 text-white font-bold py-3 px-4 rounded-lg shadow-lg transition mt-4">
+                    Login
+                </button>
+            </div>
+            
+            <div class="text-center text-sm text-slate-400 mt-4" id="authSwitchText">
+                Don't have an account? <span class="text-blue-400 cursor-pointer hover:underline font-semibold" onclick="toggleAuthMode()">Register here</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN APP SECTION (Hidden initially) -->
+    <div id="mainApp" class="hidden min-h-screen flex flex-col">
+        
+        <!-- Header -->
+        <header class="glass-panel sticky top-0 z-50 px-6 py-4 flex justify-between items-center shadow-lg">
+            <div class="flex items-center gap-2 text-xl font-bold text-red-500">
+                <i class="fab fa-youtube"></i>
+                <span class="text-white hidden sm:block">TubeGenius AI</span>
+            </div>
+            <div class="flex items-center gap-3">
+                <span class="text-sm text-slate-300 hidden md:inline">Hi, <span id="userDisplay" class="text-white font-bold"></span></span>
+                <input type="password" id="apiKeyInput" placeholder="Gemini API Key..." 
+                    class="bg-slate-800 text-sm px-3 py-1.5 rounded border border-slate-600 focus:outline-none focus:border-red-500 w-32 md:w-48"
+                    title="Get it from Google AI Studio">
+                <button onclick="saveApiKey()" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded text-sm transition">Save Key</button>
+                <button onclick="logout()" class="bg-slate-700 hover:bg-slate-600 text-white px-3 py-1.5 rounded text-sm transition ml-2" title="Logout">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content (Same as before) -->
+        <main class="flex-grow p-6 max-w-6xl mx-auto w-full flex flex-col gap-6">
+            
+            <!-- Video Upload Section -->
+            <section id="uploadSection" class="glass-panel p-10 rounded-xl text-center border-dashed border-2 border-slate-600 hover:border-red-500 transition cursor-pointer flex flex-col items-center justify-center min-h-[300px]">
+                <input type="file" id="videoInput" accept="video/*" class="hidden" onchange="handleVideoUpload(event)">
+                <i class="fas fa-cloud-upload-alt text-5xl text-slate-400 mb-4"></i>
+                <h2 class="text-2xl font-bold mb-2">Upload Video to Generate Magic</h2>
+                <p class="text-slate-400 mb-4">Select an MP4, WebM, or MKV file. We will extract a frame and analyze it.</p>
+                <button onclick="document.getElementById('videoInput').click()" class="bg-red-600 hover:bg-red-500 text-white px-6 py-3 rounded-lg font-semibold shadow-lg transition transform hover:scale-105">
+                    Select Video File
+                </button>
+            </section>
+
+            <!-- Hidden Video Element for Frame Extraction -->
+            <video id="hiddenVideo" class="hidden" preload="metadata" crossorigin="anonymous"></video>
+            <canvas id="hiddenCanvas" class="hidden"></canvas>
+
+            <!-- Loading State -->
+            <div id="loadingIndicator" class="hidden text-center py-10">
+                <i class="fas fa-spinner fa-spin text-4xl text-red-500 mb-3"></i>
+                <p class="text-lg text-slate-300" id="loadingText">Analyzing video and generating content...</p>
             </div>
 
-            <!-- Right Column: SEO Metadata & Chat -->
-            <div class="w-full md:w-2/3 flex flex-col gap-6">
-                <!-- Metadata Results -->
-                <div class="glass-panel p-6 rounded-xl flex flex-col gap-4">
-                    <div>
-                        <label class="text-sm font-semibold text-slate-400 uppercase">YouTube Title</label>
-                        <div class="flex gap-2 mt-1">
-                            <input type="text" id="resTitle" class="w-full bg-slate-800 border border-slate-600 rounded px-3 py-2 focus:outline-none focus:border-red-500 font-bold text-lg">
-                            <button onclick="copyText('resTitle')" class="bg-slate-700 hover:bg-slate-600 px-3 rounded"><i class="far fa-copy"></i></button>
-                        </div>
+            <!-- Results Section -->
+            <div id="resultsSection" class="hidden flex flex-col md:flex-row gap-6">
+                
+                <!-- Left Column -->
+                <div class="w-full md:w-1/3 flex flex-col gap-6">
+                    <div class="glass-panel p-4 rounded-xl">
+                        <h3 class="font-bold mb-2 text-slate-300">Video Preview</h3>
+                        <video id="previewVideo" controls class="w-full rounded-lg bg-black"></video>
                     </div>
-                    <div>
-                        <label class="text-sm font-semibold text-slate-400 uppercase">Description</label>
-                        <div class="flex gap-2 mt-1">
-                            <textarea id="resDesc" rows="6" class="w-full bg-slate-800 border border-slate-600 rounded px-3 py-2 focus:outline-none focus:border-red-500"></textarea>
-                            <button onclick="copyText('resDesc')" class="bg-slate-700 hover:bg-slate-600 px-3 rounded"><i class="far fa-copy"></i></button>
-                        </div>
-                    </div>
-                    <div>
-                        <label class="text-sm font-semibold text-slate-400 uppercase">Tags</label>
-                        <div class="flex gap-2 mt-1">
-                            <textarea id="resTags" rows="2" class="w-full bg-slate-800 border border-slate-600 rounded px-3 py-2 focus:outline-none focus:border-red-500 text-sm text-blue-400"></textarea>
-                            <button onclick="copyText('resTags')" class="bg-slate-700 hover:bg-slate-600 px-3 rounded"><i class="far fa-copy"></i></button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Chat/Refine Section -->
-                <div class="glass-panel p-6 rounded-xl flex flex-col">
-                    <h3 class="font-bold mb-2 text-slate-300"><i class="fas fa-magic text-yellow-400 mr-2"></i>Refine Results</h3>
-                    <p class="text-xs text-slate-400 mb-3">Not happy? Tell AI to change it (e.g., "Make title more clickbaity", "Translate description to Hindi")</p>
-                    <div class="flex gap-2">
-                        <input type="text" id="chatInput" placeholder="Type your changes here..." 
-                            class="flex-grow bg-slate-800 border border-slate-600 rounded-l px-4 py-2 focus:outline-none focus:border-red-500"
-                            onkeypress="if(event.key === 'Enter') refineMetadata()">
-                        <button onclick="refineMetadata()" class="bg-red-600 hover:bg-red-500 px-6 py-2 rounded-r font-semibold transition">
-                            Update
+                    
+                    <div class="glass-panel p-4 rounded-xl flex flex-col items-center">
+                        <h3 class="font-bold mb-2 text-slate-300 w-full text-left">Generated Thumbnail</h3>
+                        <canvas id="thumbnailCanvas" class="w-full rounded-lg mb-4 bg-black"></canvas>
+                        <button onclick="downloadThumbnail()" class="w-full bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded font-semibold transition flex items-center justify-center gap-2">
+                            <i class="fas fa-download"></i> Download Thumbnail
                         </button>
                     </div>
                 </div>
+
+                <!-- Right Column -->
+                <div class="w-full md:w-2/3 flex flex-col gap-6">
+                    <div class="glass-panel p-6 rounded-xl flex flex-col gap-4">
+                        <div>
+                            <label class="text-sm font-semibold text-slate-400 uppercase">YouTube Title</label>
+                            <div class="flex gap-2 mt-1">
+                                <input type="text" id="resTitle" class="w-full bg-slate-800 border border-slate-600 rounded px-3 py-2 focus:outline-none focus:border-red-500 font-bold text-lg">
+                                <button onclick="copyText('resTitle')" class="bg-slate-700 hover:bg-slate-600 px-3 rounded"><i class="far fa-copy"></i></button>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="text-sm font-semibold text-slate-400 uppercase">Description</label>
+                            <div class="flex gap-2 mt-1">
+                                <textarea id="resDesc" rows="6" class="w-full bg-slate-800 border border-slate-600 rounded px-3 py-2 focus:outline-none focus:border-red-500"></textarea>
+                                <button onclick="copyText('resDesc')" class="bg-slate-700 hover:bg-slate-600 px-3 rounded"><i class="far fa-copy"></i></button>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="text-sm font-semibold text-slate-400 uppercase">Tags</label>
+                            <div class="flex gap-2 mt-1">
+                                <textarea id="resTags" rows="2" class="w-full bg-slate-800 border border-slate-600 rounded px-3 py-2 focus:outline-none focus:border-red-500 text-sm text-blue-400"></textarea>
+                                <button onclick="copyText('resTags')" class="bg-slate-700 hover:bg-slate-600 px-3 rounded"><i class="far fa-copy"></i></button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Chat/Refine Section -->
+                    <div class="glass-panel p-6 rounded-xl flex flex-col">
+                        <h3 class="font-bold mb-2 text-slate-300"><i class="fas fa-magic text-yellow-400 mr-2"></i>Refine Results</h3>
+                        <p class="text-xs text-slate-400 mb-3">Not happy? Tell AI to change it (e.g., "Make title in Hindi", "Add more emojis")</p>
+                        <div class="flex gap-2">
+                            <input type="text" id="chatInput" placeholder="Type your instructions here..." 
+                                class="flex-grow bg-slate-800 border border-slate-600 rounded-l px-4 py-2 focus:outline-none focus:border-red-500"
+                                onkeypress="if(event.key === 'Enter') refineMetadata()">
+                            <button onclick="refineMetadata()" class="bg-red-600 hover:bg-red-500 px-6 py-2 rounded-r font-semibold transition">
+                                Update
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
-    </main>
+        </main>
+    </div>
 
     <script>
-        // Check for saved API key on load
+        // ================= AUTHENTICATION LOGIC =================
+        let isLoginMode = true;
+
+        // Check login state on load
         document.addEventListener("DOMContentLoaded", () => {
+            const currentUser = localStorage.getItem("currentUser");
+            if (currentUser) {
+                showMainApp(currentUser);
+            }
+            
+            // Check for saved API key
             const savedKey = localStorage.getItem("gemini_api_key");
             if (savedKey) document.getElementById("apiKeyInput").value = savedKey;
         });
+
+        function toggleAuthMode() {
+            isLoginMode = !isLoginMode;
+            document.getElementById('authTitle').innerText = isLoginMode ? 'Login to TubeGenius' : 'Create an Account';
+            document.getElementById('authSubtitle').innerText = isLoginMode ? 'Welcome back! Please enter your details.' : 'Register a new account to get started.';
+            document.getElementById('authBtn').innerText = isLoginMode ? 'Login' : 'Register';
+            
+            document.getElementById('authSwitchText').innerHTML = isLoginMode 
+                ? 'Don\'t have an account? <span class="text-blue-400 cursor-pointer hover:underline font-semibold" onclick="toggleAuthMode()">Register here</span>' 
+                : 'Already have an account? <span class="text-blue-400 cursor-pointer hover:underline font-semibold" onclick="toggleAuthMode()">Login here</span>';
+                
+            document.getElementById('emailInput').value = "";
+            document.getElementById('passwordInput').value = "";
+        }
+
+        function handleAuth() {
+            const email = document.getElementById('emailInput').value.trim();
+            const password = document.getElementById('passwordInput').value.trim();
+            
+            if (!email || !password) {
+                alert("Please enter both email and password!");
+                return;
+            }
+
+            let users = JSON.parse(localStorage.getItem('tubegenius_users') || '[]');
+
+            if (isLoginMode) {
+                // Login Flow
+                const userExists = users.find(u => u.email === email && u.password === password);
+                if (userExists) {
+                    localStorage.setItem('currentUser', email);
+                    showMainApp(email);
+                } else {
+                    alert("Invalid email or password!");
+                }
+            } else {
+                // Register Flow
+                if (users.find(u => u.email === email)) {
+                    alert("This email is already registered! Please login.");
+                    return;
+                }
+                users.push({ email, password });
+                localStorage.setItem('tubegenius_users', JSON.stringify(users));
+                alert("Registration successful! You can now login.");
+                toggleAuthMode(); // Switch back to login
+            }
+        }
+
+        function showMainApp(email) {
+            document.getElementById('authSection').classList.add('hidden');
+            document.getElementById('mainApp').classList.remove('hidden');
+            document.getElementById('userDisplay').innerText = email.split('@')[0]; // Show name part of email
+        }
+
+        function logout() {
+            localStorage.removeItem('currentUser');
+            document.getElementById('authSection').classList.remove('hidden');
+            document.getElementById('mainApp').classList.add('hidden');
+            document.getElementById('emailInput').value = "";
+            document.getElementById('passwordInput').value = "";
+        }
+
+        // ================= APP LOGIC (API & VIDEO) =================
 
         function saveApiKey() {
             const key = document.getElementById("apiKeyInput").value;
             if (key) {
                 localStorage.setItem("gemini_api_key", key);
-                alert("API Key saved to your browser!");
+                alert("API Key saved securely in your browser!");
             }
         }
 
         let currentImageBase64 = "";
 
-        // File Upload Handler
         async function handleVideoUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
 
-            const apiKey = localStorage.getItem("gemini_api_key");
+            const apiKey = localStorage.getItem("gemini_api_key") || document.getElementById("apiKeyInput").value;
             if (!apiKey) {
-                alert("Please enter and save your Gemini API Key first!");
+                alert("Please enter your Gemini API Key at the top right first!");
                 return;
             }
 
-            // Hide upload, show loading
             document.getElementById("uploadSection").classList.add("hidden");
             document.getElementById("loadingIndicator").classList.remove("hidden");
             document.getElementById("resultsSection").classList.add("hidden");
@@ -169,24 +272,18 @@
             const hiddenVideo = document.getElementById("hiddenVideo");
             hiddenVideo.src = videoURL;
             
-            hiddenVideo.onloadeddata = () => {
-                // Seek to 2 seconds to avoid black screen at start
-                hiddenVideo.currentTime = 2;
-            };
+            hiddenVideo.onloadeddata = () => { hiddenVideo.currentTime = 2; };
 
             hiddenVideo.onseeked = async () => {
-                // Extract frame
                 const canvas = document.getElementById("hiddenCanvas");
                 canvas.width = hiddenVideo.videoWidth;
                 canvas.height = hiddenVideo.videoHeight;
                 const ctx = canvas.getContext("2d");
                 ctx.drawImage(hiddenVideo, 0, 0, canvas.width, canvas.height);
                 
-                // Get base64 (remove prefix)
                 const dataURL = canvas.toDataURL("image/jpeg");
                 currentImageBase64 = dataURL.split(",")[1]; 
 
-                // Call AI
                 await generateInitialMetadata(currentImageBase64);
             };
         }
@@ -195,7 +292,6 @@
             const prompt = `You are a YouTube SEO expert. Analyze this video frame. Generate a highly engaging YouTube Title, a detailed SEO optimized description with social media links placeholders, and a list of comma-separated tags. 
             Return STRICTLY in this JSON format without markdown code blocks:
             {"title": "your title", "description": "your description", "tags": "tag1, tag2, tag3"}`;
-
             await callGeminiAPI(prompt, base64Image);
         }
 
@@ -220,8 +316,10 @@
         }
 
         async function callGeminiAPI(prompt, base64Image) {
-            const apiKey = localStorage.getItem("gemini_api_key");
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+            const apiKey = localStorage.getItem("gemini_api_key") || document.getElementById("apiKeyInput").value;
+            
+            // Note: Updated model to gemini-1.5-flash-latest to fix the v1beta error.
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`;
 
             const requestBody = {
                 contents: [{
@@ -248,26 +346,22 @@
                 }
 
                 let textResponse = data.candidates[0].content.parts[0].text;
-                // Clean JSON string (remove markdown if any)
                 textResponse = textResponse.replace(/```json/g, '').replace(/```/g, '').trim();
                 
                 const resultJSON = JSON.parse(textResponse);
 
-                // Populate UI
                 document.getElementById("resTitle").value = resultJSON.title;
                 document.getElementById("resDesc").value = resultJSON.description;
                 document.getElementById("resTags").value = resultJSON.tags;
 
-                // Create Thumbnail
                 createThumbnail(resultJSON.title);
 
-                // Show Results
                 document.getElementById("loadingIndicator").classList.add("hidden");
                 document.getElementById("resultsSection").classList.remove("hidden");
 
             } catch (error) {
                 console.error("Error:", error);
-                alert("Failed to parse AI response. Try again.");
+                alert("Failed to process API response. Make sure your API key is valid.");
                 resetUI();
             }
         }
@@ -276,22 +370,18 @@
             const canvas = document.getElementById("thumbnailCanvas");
             const hiddenCanvas = document.getElementById("hiddenCanvas");
             
-            // Set standard 16:9 thumbnail size
             canvas.width = 1280;
             canvas.height = 720;
             const ctx = canvas.getContext("2d");
 
-            // Draw original frame
             ctx.drawImage(hiddenCanvas, 0, 0, canvas.width, canvas.height);
 
-            // Add dark gradient overlay for text readability
             const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
             gradient.addColorStop(0, "transparent");
             gradient.addColorStop(1, "rgba(0,0,0,0.8)");
             ctx.fillStyle = gradient;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // Add Text
             ctx.fillStyle = "white";
             ctx.font = "bold 70px Inter, sans-serif";
             ctx.textAlign = "center";
@@ -300,7 +390,6 @@
             ctx.shadowOffsetX = 5;
             ctx.shadowOffsetY = 5;
             
-            // Text Wrap logic
             const words = title.split(' ');
             let line = '';
             let y = canvas.height - 150;
@@ -313,8 +402,7 @@
                     ctx.fillText(line, canvas.width/2, y);
                     line = words[n] + ' ';
                     y += 80;
-                }
-                else {
+                } else {
                     line = testLine;
                 }
             }
