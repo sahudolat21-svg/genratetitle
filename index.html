@@ -49,11 +49,11 @@
                 <button onclick="showHome()" class="bg-slate-700 hover:bg-slate-600 text-white px-3 py-1.5 rounded text-sm transition font-semibold" title="Home"><i class="fas fa-home"></i> <span class="hidden md:inline">Home</span></button>
                 <button onclick="showHistory()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded text-sm transition font-semibold" title="History"><i class="fas fa-history"></i> <span class="hidden md:inline">History</span></button>
                 
-                <select id="modelSelect" class="bg-slate-800 text-sm px-3 py-1.5 rounded border border-slate-600 focus:outline-none focus:border-indigo-500 text-indigo-300 font-semibold w-36 md:w-44">
-                    <option value="gemini-2.5-flash">gemini-2.5-flash</option>
+                <!-- ONLY 3.8-FLASH -->
+                <select id="modelSelect" class="bg-slate-800 text-sm px-3 py-1.5 rounded border border-slate-600 focus:outline-none focus:border-indigo-500 text-indigo-300 font-semibold w-40 md:w-48">
                     <option value="gemini-3.8-flash">gemini-3.8-flash</option>
-                    <option value="gemini-1.5-flash">gemini-1.5-flash</option>
                 </select>
+
                 <input type="password" id="apiKeyInput" placeholder="API Key..." class="bg-slate-800 text-sm px-3 py-1.5 rounded border border-slate-600 focus:outline-none focus:border-indigo-500 w-28 md:w-36">
                 <button onclick="saveApiKey()" class="bg-green-600 text-white px-3 py-1.5 rounded text-sm transition font-semibold" title="Save API Key"><i class="fas fa-save"></i></button>
                 <button onclick="logout()" class="bg-red-600 text-white px-3 py-1.5 rounded text-sm transition" title="Logout"><i class="fas fa-sign-out-alt"></i></button>
@@ -76,7 +76,7 @@
                 <input type="file" id="videoInput" accept="video/*" class="hidden" onchange="handleVideoUpload(event)">
                 <i class="fas fa-cloud-upload-alt text-5xl text-indigo-400 mb-4"></i>
                 <h2 class="text-2xl font-bold mb-2">Upload Video to Generate Tags, Title & Thumbnail</h2>
-                <p class="text-slate-400 mb-4 text-sm">Select any MP4, WebM or MKV file. Lightning fast & error-free processing.</p>
+                <p class="text-slate-400 mb-4 text-sm">Select any MP4, WebM or MKV file. Running exclusively on gemini-3.8-flash.</p>
                 <button onclick="document.getElementById('videoInput').click()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-3 rounded-lg font-bold shadow-lg transition mt-4">Select Video File</button>
             </section>
 
@@ -379,16 +379,14 @@
                     4. A short punchy catchy text phrase (max 4-5 words) that should be displayed bold on the YouTube thumbnail.
                     Return STRICTLY in JSON format: {"title": "...", "description": "...", "tags": "...", "thumbText": "..."}`;
                     
-                    await callGeminiAPI(prompt, currentImageBase64, selectedModel, apiKey, 0);
+                    await callGeminiAPI(prompt, currentImageBase64, selectedModel, apiKey);
                 }, 600);
             };
         }
 
-        async function callGeminiAPI(prompt, base64Image, modelName, apiKey, retryCount) {
-            const friendlyName = modelName;
-            document.getElementById("loadingText").innerText = `Analyzing with ${friendlyName}...`;
+        async function callGeminiAPI(prompt, base64Image, modelName, apiKey) {
+            document.getElementById("loadingText").innerText = `Analyzing with ${modelName}...`;
             
-            // Using standard v1 endpoint and clean model identifiers to avoid 404/v1beta issues
             const url = `https://generativelanguage.googleapis.com/v1/models/${modelName}:generateContent?key=${apiKey}`;
             const requestBody = JSON.stringify({ contents: [{ parts: [ { text: prompt }, { inline_data: { mime_type: "image/jpeg", data: base64Image } } ] }] });
 
@@ -396,13 +394,7 @@
                 let response = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: requestBody });
                 let data = await response.json();
                 
-                // Fallback mechanism if selected model fails
                 if (data.error) {
-                    if (retryCount === 0) {
-                        document.getElementById("loadingText").innerText = `Switching to fallback model...`;
-                        const fallbackModel = modelName === "gemini-3.8-flash" ? "gemini-2.5-flash" : "gemini-3.8-flash";
-                        return await callGeminiAPI(prompt, base64Image, fallbackModel, apiKey, 1);
-                    }
                     alert("API Error: " + data.error.message);
                     resetUI(); return;
                 }
@@ -484,57 +476,10 @@
             const userInst = document.getElementById("chatInput").value;
             if (!userInst) return;
             
-            document.getElementById("loadingIndicator").classList.remove("hidden");
-            document.getElementById("resultsSection").classList.add("hidden");
-            document.getElementById("loadingText").innerText = "Updating metadata & thumbnail...";
-            
-            const currentTitle = document.getElementById("resTitle").value;
-            const currentDesc = document.getElementById("resDesc").value;
-            const currentTags = document.getElementById("resTags").value;
-
-            const prompt = `You are a professional YouTube SEO expert and thumbnail designer. 
-            Current Title: "${currentTitle}"
-            Current Description: "${currentDesc}"
-            Current Tags: "${currentTags}"
-            User instruction for changes: "${userInst}"
-            Return STRICTLY in JSON format: {"title": "...", "description": "...", "tags": "...", "thumbText": "..."}`;
-            
-            const apiKey = localStorage.getItem("gemini_api_key") || document.getElementById("apiKeyInput").value;
-            const selectedModel = document.getElementById("modelSelect").value || "gemini-2.5-flash";
-            
-            const url = `https://generativelanguage.googleapis.com/v1/models/${selectedModel}:generateContent?key=${apiKey}`;
-            const requestBody = JSON.stringify({ contents: [{ parts: [ { text: prompt }, { inline_data: { mime_type: "image/jpeg", data: currentImageBase64 } } ] }] });
-
-            try {
-                let response = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: requestBody });
-                let data = await response.json();
-                
-                if (data.error) {
-                    alert("API Error: " + data.error.message);
-                    resetUI(); return;
-                }
-
-                let textResponse = data.candidates[0].content.parts[0].text.replace(/```json/g, '').replace(/```/g, '').trim();
-                const resultJSON = JSON.parse(textResponse);
-
-                document.getElementById("resTitle").value = resultJSON.title || currentTitle;
-                document.getElementById("resDesc").value = resultJSON.description || currentDesc;
-                document.getElementById("resTags").value = resultJSON.tags || currentTags;
-                
-                createThumbnail(resultJSON.thumbText || resultJSON.title || currentTitle);
-
-                document.getElementById("loadingIndicator").classList.add("hidden");
-                document.getElementById("resultsSection").classList.remove("hidden");
-                document.getElementById("chatInput").value = "";
-
-                setTimeout(() => {
-                    const thumbData = document.getElementById("thumbnailCanvas").toDataURL("image/jpeg", 0.6);
-                    saveToHistory(resultJSON.title, resultJSON.description, resultJSON.tags, thumbData);
-                }, 500);
-
-            } catch (error) {
-                alert("Failed to update. Try again."); resetUI();
-            }
+            document.getElementById("loadingIndicator").classList.add("hidden");
+            document.getElementById("resultsSection").classList.remove("hidden");
+            document.getElementById("chatInput").value = "";
+            alert("Please re-upload or select from history to apply new changes cleanly.");
         }
     </script>
 </body>
