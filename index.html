@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TubeGenius AI - Video Metadata Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f1115;
+            color: #e2e8f0;
+        }
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #1e293b; }
+        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="glass-panel sticky top-0 z-50 px-6 py-4 flex justify-between items-center shadow-lg">
+        <div class="flex items-center gap-2 text-xl font-bold text-red-500">
+            <i class="fab fa-youtube"></i>
+            <span class="text-white">TubeGenius AI</span>
+        </div>
+        <div class="flex items-center gap-2">
+            <input type="password" id="apiKeyInput" placeholder="Enter Gemini API Key..." 
+                class="bg-slate-800 text-sm px-3 py-1.5 rounded border border-slate-600 focus:outline-none focus:border-red-500 w-64"
+                title="Get it from Google AI Studio">
+            <button onclick="saveApiKey()" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded text-sm transition">Save Key</button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow p-6 max-w-6xl mx-auto w-full flex flex-col gap-6">
+        
+        <!-- Video Upload Section -->
+        <section id="uploadSection" class="glass-panel p-10 rounded-xl text-center border-dashed border-2 border-slate-600 hover:border-red-500 transition cursor-pointer flex flex-col items-center justify-center min-h-[300px]">
+            <input type="file" id="videoInput" accept="video/*" class="hidden" onchange="handleVideoUpload(event)">
+            <i class="fas fa-cloud-upload-alt text-5xl text-slate-400 mb-4"></i>
+            <h2 class="text-2xl font-bold mb-2">Upload Video to Generate Magic</h2>
+            <p class="text-slate-400 mb-4">Select an MP4, WebM, or MKV file. We will extract a frame and analyze it.</p>
+            <button onclick="document.getElementById('videoInput').click()" class="bg-red-600 hover:bg-red-500 text-white px-6 py-3 rounded-lg font-semibold shadow-lg transition transform hover:scale-105">
+                Select Video File
+            </button>
+        </section>
+
+        <!-- Hidden Video Element for Frame Extraction -->
+        <video id="hiddenVideo" class="hidden" preload="metadata" crossorigin="anonymous"></video>
+        <canvas id="hiddenCanvas" class="hidden"></canvas>
+
+        <!-- Loading State -->
+        <div id="loadingIndicator" class="hidden text-center py-10">
+            <i class="fas fa-spinner fa-spin text-4xl text-red-500 mb-3"></i>
+            <p class="text-lg text-slate-300" id="loadingText">Analyzing video and generating content...</p>
+        </div>
+
+        <!-- Results Section (Hidden initially) -->
+        <div id="resultsSection" class="hidden flex flex-col md:flex-row gap-6">
+            
+            <!-- Left Column: Video & Thumbnail -->
+            <div class="w-full md:w-1/3 flex flex-col gap-6">
+                <!-- Video Player -->
+                <div class="glass-panel p-4 rounded-xl">
+                    <h3 class="font-bold mb-2 text-slate-300">Video Preview</h3>
+                    <video id="previewVideo" controls class="w-full rounded-lg bg-black"></video>
+                </div>
+                
+                <!-- Thumbnail Generated -->
+                <div class="glass-panel p-4 rounded-xl flex flex-col items-center">
+                    <h3 class="font-bold mb-2 text-slate-300 w-full text-left">Generated Thumbnail</h3>
+                    <canvas id="thumbnailCanvas" class="w-full rounded-lg mb-4 bg-black"></canvas>
+                    <button onclick="downloadThumbnail()" class="w-full bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded font-semibold transition flex items-center justify-center gap-2">
+                        <i class="fas fa-download"></i> Download Thumbnail
+                    </button>
+                </div>
+            </div>
+
+            <!-- Right Column: SEO Metadata & Chat -->
+            <div class="w-full md:w-2/3 flex flex-col gap-6">
+                <!-- Metadata Results -->
+                <div class="glass-panel p-6 rounded-xl flex flex-col gap-4">
+                    <div>
+                        <label class="text-sm font-semibold text-slate-400 uppercase">YouTube Title</label>
+                        <div class="flex gap-2 mt-1">
+                            <input type="text" id="resTitle" class="w-full bg-slate-800 border border-slate-600 rounded px-3 py-2 focus:outline-none focus:border-red-500 font-bold text-lg">
+                            <button onclick="copyText('resTitle')" class="bg-slate-700 hover:bg-slate-600 px-3 rounded"><i class="far fa-copy"></i></button>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="text-sm font-semibold text-slate-400 uppercase">Description</label>
+                        <div class="flex gap-2 mt-1">
+                            <textarea id="resDesc" rows="6" class="w-full bg-slate-800 border border-slate-600 rounded px-3 py-2 focus:outline-none focus:border-red-500"></textarea>
+                            <button onclick="copyText('resDesc')" class="bg-slate-700 hover:bg-slate-600 px-3 rounded"><i class="far fa-copy"></i></button>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="text-sm font-semibold text-slate-400 uppercase">Tags</label>
+                        <div class="flex gap-2 mt-1">
+                            <textarea id="resTags" rows="2" class="w-full bg-slate-800 border border-slate-600 rounded px-3 py-2 focus:outline-none focus:border-red-500 text-sm text-blue-400"></textarea>
+                            <button onclick="copyText('resTags')" class="bg-slate-700 hover:bg-slate-600 px-3 rounded"><i class="far fa-copy"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chat/Refine Section -->
+                <div class="glass-panel p-6 rounded-xl flex flex-col">
+                    <h3 class="font-bold mb-2 text-slate-300"><i class="fas fa-magic text-yellow-400 mr-2"></i>Refine Results</h3>
+                    <p class="text-xs text-slate-400 mb-3">Not happy? Tell AI to change it (e.g., "Make title more clickbaity", "Translate description to Hindi")</p>
+                    <div class="flex gap-2">
+                        <input type="text" id="chatInput" placeholder="Type your changes here..." 
+                            class="flex-grow bg-slate-800 border border-slate-600 rounded-l px-4 py-2 focus:outline-none focus:border-red-500"
+                            onkeypress="if(event.key === 'Enter') refineMetadata()">
+                        <button onclick="refineMetadata()" class="bg-red-600 hover:bg-red-500 px-6 py-2 rounded-r font-semibold transition">
+                            Update
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Check for saved API key on load
+        document.addEventListener("DOMContentLoaded", () => {
+            const savedKey = localStorage.getItem("gemini_api_key");
+            if (savedKey) document.getElementById("apiKeyInput").value = savedKey;
+        });
+
+        function saveApiKey() {
+            const key = document.getElementById("apiKeyInput").value;
+            if (key) {
+                localStorage.setItem("gemini_api_key", key);
+                alert("API Key saved to your browser!");
+            }
+        }
+
+        let currentImageBase64 = "";
+
+        // File Upload Handler
+        async function handleVideoUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const apiKey = localStorage.getItem("gemini_api_key");
+            if (!apiKey) {
+                alert("Please enter and save your Gemini API Key first!");
+                return;
+            }
+
+            // Hide upload, show loading
+            document.getElementById("uploadSection").classList.add("hidden");
+            document.getElementById("loadingIndicator").classList.remove("hidden");
+            document.getElementById("resultsSection").classList.add("hidden");
+
+            const videoURL = URL.createObjectURL(file);
+            document.getElementById("previewVideo").src = videoURL;
+            
+            const hiddenVideo = document.getElementById("hiddenVideo");
+            hiddenVideo.src = videoURL;
+            
+            hiddenVideo.onloadeddata = () => {
+                // Seek to 2 seconds to avoid black screen at start
+                hiddenVideo.currentTime = 2;
+            };
+
+            hiddenVideo.onseeked = async () => {
+                // Extract frame
+                const canvas = document.getElementById("hiddenCanvas");
+                canvas.width = hiddenVideo.videoWidth;
+                canvas.height = hiddenVideo.videoHeight;
+                const ctx = canvas.getContext("2d");
+                ctx.drawImage(hiddenVideo, 0, 0, canvas.width, canvas.height);
+                
+                // Get base64 (remove prefix)
+                const dataURL = canvas.toDataURL("image/jpeg");
+                currentImageBase64 = dataURL.split(",")[1]; 
+
+                // Call AI
+                await generateInitialMetadata(currentImageBase64);
+            };
+        }
+
+        async function generateInitialMetadata(base64Image) {
+            const prompt = `You are a YouTube SEO expert. Analyze this video frame. Generate a highly engaging YouTube Title, a detailed SEO optimized description with social media links placeholders, and a list of comma-separated tags. 
+            Return STRICTLY in this JSON format without markdown code blocks:
+            {"title": "your title", "description": "your description", "tags": "tag1, tag2, tag3"}`;
+
+            await callGeminiAPI(prompt, base64Image);
+        }
+
+        async function refineMetadata() {
+            const userInstruction = document.getElementById("chatInput").value;
+            if (!userInstruction) return;
+
+            document.getElementById("loadingIndicator").classList.remove("hidden");
+            document.getElementById("resultsSection").classList.add("hidden");
+
+            const currentTitle = document.getElementById("resTitle").value;
+            const currentDesc = document.getElementById("resDesc").value;
+
+            const prompt = `You are a YouTube SEO expert. Here is the current metadata: Title: "${currentTitle}". Description: "${currentDesc}". 
+            The user wants to change it: "${userInstruction}". 
+            Based on the image frame and user instruction, generate updated Title, Description, and Tags.
+            Return STRICTLY in this JSON format without markdown code blocks:
+            {"title": "your title", "description": "your description", "tags": "tag1, tag2, tag3"}`;
+
+            await callGeminiAPI(prompt, currentImageBase64);
+            document.getElementById("chatInput").value = "";
+        }
+
+        async function callGeminiAPI(prompt, base64Image) {
+            const apiKey = localStorage.getItem("gemini_api_key");
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+
+            const requestBody = {
+                contents: [{
+                    parts: [
+                        { text: prompt },
+                        { inline_data: { mime_type: "image/jpeg", data: base64Image } }
+                    ]
+                }]
+            };
+
+            try {
+                const response = await fetch(url, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(requestBody)
+                });
+
+                const data = await response.json();
+                
+                if (data.error) {
+                    alert("API Error: " + data.error.message);
+                    resetUI();
+                    return;
+                }
+
+                let textResponse = data.candidates[0].content.parts[0].text;
+                // Clean JSON string (remove markdown if any)
+                textResponse = textResponse.replace(/```json/g, '').replace(/```/g, '').trim();
+                
+                const resultJSON = JSON.parse(textResponse);
+
+                // Populate UI
+                document.getElementById("resTitle").value = resultJSON.title;
+                document.getElementById("resDesc").value = resultJSON.description;
+                document.getElementById("resTags").value = resultJSON.tags;
+
+                // Create Thumbnail
+                createThumbnail(resultJSON.title);
+
+                // Show Results
+                document.getElementById("loadingIndicator").classList.add("hidden");
+                document.getElementById("resultsSection").classList.remove("hidden");
+
+            } catch (error) {
+                console.error("Error:", error);
+                alert("Failed to parse AI response. Try again.");
+                resetUI();
+            }
+        }
+
+        function createThumbnail(title) {
+            const canvas = document.getElementById("thumbnailCanvas");
+            const hiddenCanvas = document.getElementById("hiddenCanvas");
+            
+            // Set standard 16:9 thumbnail size
+            canvas.width = 1280;
+            canvas.height = 720;
+            const ctx = canvas.getContext("2d");
+
+            // Draw original frame
+            ctx.drawImage(hiddenCanvas, 0, 0, canvas.width, canvas.height);
+
+            // Add dark gradient overlay for text readability
+            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            gradient.addColorStop(0, "transparent");
+            gradient.addColorStop(1, "rgba(0,0,0,0.8)");
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Add Text
+            ctx.fillStyle = "white";
+            ctx.font = "bold 70px Inter, sans-serif";
+            ctx.textAlign = "center";
+            ctx.shadowColor = "black";
+            ctx.shadowBlur = 10;
+            ctx.shadowOffsetX = 5;
+            ctx.shadowOffsetY = 5;
+            
+            // Text Wrap logic
+            const words = title.split(' ');
+            let line = '';
+            let y = canvas.height - 150;
+
+            for(let n = 0; n < words.length; n++) {
+                let testLine = line + words[n] + ' ';
+                let metrics = ctx.measureText(testLine);
+                let testWidth = metrics.width;
+                if (testWidth > canvas.width - 100 && n > 0) {
+                    ctx.fillText(line, canvas.width/2, y);
+                    line = words[n] + ' ';
+                    y += 80;
+                }
+                else {
+                    line = testLine;
+                }
+            }
+            ctx.fillText(line, canvas.width/2, y);
+        }
+
+        function downloadThumbnail() {
+            const canvas = document.getElementById("thumbnailCanvas");
+            const link = document.createElement("a");
+            link.download = "thumbnail.jpg";
+            link.href = canvas.toDataURL("image/jpeg");
+            link.click();
+        }
+
+        function copyText(elementId) {
+            const el = document.getElementById(elementId);
+            el.select();
+            document.execCommand("copy");
+            alert("Copied to clipboard!");
+        }
+
+        function resetUI() {
+            document.getElementById("loadingIndicator").classList.add("hidden");
+            document.getElementById("uploadSection").classList.remove("hidden");
+        }
+    </script>
+</body>
+</html>
