@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TubeGenius AI v3.0 - FIX</title>
+    <title>TubeGenius AI v4.0 - Ultimate Fix</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -16,61 +16,57 @@
 
     <!-- AUTHENTICATION SECTION -->
     <div id="authSection" class="min-h-screen flex items-center justify-center p-6">
-        <div class="glass-panel p-8 rounded-xl w-full max-w-md shadow-2xl flex flex-col gap-5 border-t-4 border-t-green-500">
+        <div class="glass-panel p-8 rounded-xl w-full max-w-md shadow-2xl flex flex-col gap-5 border-t-4 border-t-purple-500">
             <div class="text-center mb-2">
                 <i class="fab fa-youtube text-5xl text-red-500 mb-4 drop-shadow-[0_0_10px_rgba(239,68,68,0.8)]"></i>
-                <h2 id="authTitle" class="text-2xl font-bold text-white">Login to TubeGenius <span class="bg-green-600 text-white text-xs px-2 py-1 rounded ml-2">v3.0 Update</span></h2>
-                <p id="authSubtitle" class="text-sm text-slate-400 mt-1">Please enter your details.</p>
+                <h2 id="authTitle" class="text-2xl font-bold text-white">TubeGenius <span class="bg-purple-600 text-white text-xs px-2 py-1 rounded ml-2">v4.0</span></h2>
+                <p id="authSubtitle" class="text-sm text-slate-400 mt-1">Please login to continue.</p>
             </div>
             
             <div class="flex flex-col gap-4">
-                <div>
-                    <label class="text-sm font-semibold text-slate-400">Email Address</label>
-                    <input type="email" id="emailInput" class="w-full bg-slate-800 border border-slate-600 rounded px-4 py-3 mt-1 focus:outline-none focus:border-green-500 transition">
-                </div>
-                <div>
-                    <label class="text-sm font-semibold text-slate-400">Password</label>
-                    <input type="password" id="passwordInput" class="w-full bg-slate-800 border border-slate-600 rounded px-4 py-3 mt-1 focus:outline-none focus:border-green-500 transition" onkeypress="if(event.key === 'Enter') handleAuth()">
-                </div>
-                <button id="authBtn" onclick="handleAuth()" class="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-3 px-4 rounded-lg shadow-lg transition mt-4">
-                    Login
-                </button>
+                <input type="email" id="emailInput" placeholder="Email Address" class="w-full bg-slate-800 border border-slate-600 rounded px-4 py-3 focus:outline-none focus:border-purple-500 transition">
+                <input type="password" id="passwordInput" placeholder="Password" class="w-full bg-slate-800 border border-slate-600 rounded px-4 py-3 focus:outline-none focus:border-purple-500 transition" onkeypress="if(event.key === 'Enter') handleAuth()">
+                <button id="authBtn" onclick="handleAuth()" class="w-full bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 px-4 rounded-lg shadow-lg transition mt-2">Login</button>
             </div>
-            
-            <div class="text-center text-sm text-slate-400 mt-4" id="authSwitchText">
-                Don't have an account? <span class="text-green-400 cursor-pointer hover:underline font-semibold" onclick="toggleAuthMode()">Register here</span>
+            <div class="text-center text-sm text-slate-400 mt-2" id="authSwitchText">
+                Don't have an account? <span class="text-purple-400 cursor-pointer hover:underline font-semibold" onclick="toggleAuthMode()">Register here</span>
             </div>
         </div>
     </div>
 
     <!-- MAIN APP SECTION -->
     <div id="mainApp" class="hidden min-h-screen flex flex-col">
-        <header class="glass-panel sticky top-0 z-50 px-6 py-4 flex justify-between items-center shadow-lg border-b-2 border-b-green-500">
+        <header class="glass-panel sticky top-0 z-50 px-6 py-4 flex justify-between items-center shadow-lg border-b-2 border-b-purple-500 flex-wrap gap-4">
             <div class="flex items-center gap-2 text-xl font-bold text-red-500">
                 <i class="fab fa-youtube"></i>
-                <span class="text-white hidden sm:block">TubeGenius AI <span class="bg-green-600 text-white text-xs px-2 py-1 rounded ml-2">v3.0</span></span>
+                <span class="text-white">TubeGenius <span class="bg-purple-600 text-white text-xs px-2 py-1 rounded ml-1">v4.0</span></span>
             </div>
-            <div class="flex items-center gap-3">
-                <input type="password" id="apiKeyInput" placeholder="Gemini API Key..." class="bg-slate-800 text-sm px-3 py-1.5 rounded border border-slate-600 focus:outline-none focus:border-green-500 w-32 md:w-48">
+            <div class="flex items-center gap-3 flex-wrap">
+                <!-- MODEL SELECTOR DROPDOWN -->
+                <select id="modelSelect" class="bg-slate-800 text-sm px-3 py-1.5 rounded border border-slate-600 focus:outline-none focus:border-purple-500 hidden text-purple-300 font-semibold" title="Select AI Model">
+                    <option value="">Fetching Models...</option>
+                </select>
+                
+                <input type="password" id="apiKeyInput" placeholder="Gemini API Key..." class="bg-slate-800 text-sm px-3 py-1.5 rounded border border-slate-600 focus:outline-none focus:border-purple-500 w-32 md:w-48">
                 <button onclick="saveApiKey()" class="bg-blue-600 text-white px-3 py-1.5 rounded text-sm transition">Save Key</button>
-                <button onclick="logout()" class="bg-slate-700 text-white px-3 py-1.5 rounded text-sm transition ml-2"><i class="fas fa-sign-out-alt"></i></button>
+                <button onclick="logout()" class="bg-slate-700 text-white px-3 py-1.5 rounded text-sm transition"><i class="fas fa-sign-out-alt"></i></button>
             </div>
         </header>
 
         <main class="flex-grow p-6 max-w-6xl mx-auto w-full flex flex-col gap-6">
-            <section id="uploadSection" class="glass-panel p-10 rounded-xl text-center border-dashed border-2 border-slate-600 hover:border-green-500 transition cursor-pointer flex flex-col items-center justify-center min-h-[300px]">
+            <section id="uploadSection" class="glass-panel p-10 rounded-xl text-center border-dashed border-2 border-slate-600 hover:border-purple-500 transition cursor-pointer flex flex-col items-center justify-center min-h-[300px]">
                 <input type="file" id="videoInput" accept="video/*" class="hidden" onchange="handleVideoUpload(event)">
                 <i class="fas fa-cloud-upload-alt text-5xl text-slate-400 mb-4"></i>
-                <h2 class="text-2xl font-bold mb-2">Upload Video (v3.0 Fixed)</h2>
-                <button onclick="document.getElementById('videoInput').click()" class="bg-green-600 hover:bg-green-500 text-white px-6 py-3 rounded-lg font-semibold shadow-lg transition mt-4">Select Video File</button>
+                <h2 class="text-2xl font-bold mb-2">Upload Video to Auto-Generate</h2>
+                <button onclick="document.getElementById('videoInput').click()" class="bg-purple-600 hover:bg-purple-500 text-white px-6 py-3 rounded-lg font-semibold shadow-lg transition mt-4">Select Video File</button>
             </section>
 
             <video id="hiddenVideo" class="hidden" preload="metadata" crossorigin="anonymous"></video>
             <canvas id="hiddenCanvas" class="hidden"></canvas>
 
             <div id="loadingIndicator" class="hidden text-center py-10 flex flex-col items-center">
-                <i class="fas fa-spinner fa-spin text-4xl text-green-500 mb-3"></i>
-                <p class="text-lg text-slate-300" id="loadingText">Extracting video frame...</p>
+                <i class="fas fa-spinner fa-spin text-4xl text-purple-500 mb-3"></i>
+                <p class="text-lg text-slate-300" id="loadingText">Processing...</p>
             </div>
 
             <div id="resultsSection" class="hidden flex flex-col md:flex-row gap-6">
@@ -78,7 +74,7 @@
                     <div class="glass-panel p-4 rounded-xl"><video id="previewVideo" controls class="w-full rounded-lg bg-black"></video></div>
                     <div class="glass-panel p-4 rounded-xl flex flex-col items-center">
                         <canvas id="thumbnailCanvas" class="w-full rounded-lg mb-4 bg-black"></canvas>
-                        <button onclick="downloadThumbnail()" class="w-full bg-green-600 text-white px-4 py-2 rounded font-semibold"><i class="fas fa-download"></i> Download</button>
+                        <button onclick="downloadThumbnail()" class="w-full bg-purple-600 text-white px-4 py-2 rounded font-semibold"><i class="fas fa-download"></i> Download Thumbnail</button>
                     </div>
                 </div>
                 <div class="w-full md:w-2/3 flex flex-col gap-6">
@@ -91,10 +87,10 @@
                         <textarea id="resTags" rows="2" class="w-full bg-slate-800 border rounded px-3 py-2 text-sm text-blue-400"></textarea>
                     </div>
                     <div class="glass-panel p-6 rounded-xl flex flex-col">
-                        <h3 class="font-bold mb-2 text-slate-300">Refine Results</h3>
+                        <h3 class="font-bold mb-2 text-slate-300">Refine Results (Chat)</h3>
                         <div class="flex gap-2">
-                            <input type="text" id="chatInput" placeholder="Make title in Hindi..." class="flex-grow bg-slate-800 border rounded-l px-4 py-2">
-                            <button onclick="refineMetadata()" class="bg-green-600 px-6 py-2 rounded-r font-semibold">Update</button>
+                            <input type="text" id="chatInput" placeholder="Make title clickbait..." class="flex-grow bg-slate-800 border rounded-l px-4 py-2" onkeypress="if(event.key === 'Enter') refineMetadata()">
+                            <button onclick="refineMetadata()" class="bg-purple-600 px-6 py-2 rounded-r font-semibold">Update</button>
                         </div>
                     </div>
                 </div>
@@ -108,12 +104,15 @@
             const currentUser = localStorage.getItem("currentUser");
             if (currentUser) showMainApp(currentUser);
             const savedKey = localStorage.getItem("gemini_api_key");
-            if (savedKey) document.getElementById("apiKeyInput").value = savedKey;
+            if (savedKey) {
+                document.getElementById("apiKeyInput").value = savedKey;
+                fetchAvailableModels(savedKey); // Auto-fetch models on load if key exists
+            }
         });
 
         function toggleAuthMode() {
             isLoginMode = !isLoginMode;
-            document.getElementById('authTitle').innerHTML = isLoginMode ? 'Login to TubeGenius <span class="bg-green-600 text-white text-xs px-2 py-1 rounded ml-2">v3.0</span>' : 'Register Account <span class="bg-green-600 text-white text-xs px-2 py-1 rounded ml-2">v3.0</span>';
+            document.getElementById('authTitle').innerHTML = isLoginMode ? 'TubeGenius <span class="bg-purple-600 text-white text-xs px-2 py-1 rounded ml-2">v4.0</span>' : 'Register <span class="bg-purple-600 text-white text-xs px-2 py-1 rounded ml-2">v4.0</span>';
             document.getElementById('authBtn').innerText = isLoginMode ? 'Login' : 'Register';
         }
 
@@ -130,7 +129,7 @@
             } else {
                 users.push({ email, password });
                 localStorage.setItem('tubegenius_users', JSON.stringify(users));
-                alert("Registered!"); toggleAuthMode();
+                alert("Registered Successfully!"); toggleAuthMode();
             }
         }
 
@@ -145,22 +144,76 @@
             document.getElementById('mainApp').classList.add('hidden');
         }
 
-        function saveApiKey() {
-            localStorage.setItem("gemini_api_key", document.getElementById("apiKeyInput").value);
-            alert("API Key saved!");
+        // ================= MODEL FETCHING LOGIC =================
+        async function fetchAvailableModels(apiKey) {
+            const selectEl = document.getElementById("modelSelect");
+            selectEl.classList.remove("hidden");
+            selectEl.innerHTML = `<option value="">Fetching Models...</option>`;
+            
+            try {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+                const data = await response.json();
+                
+                if (data.error) {
+                    selectEl.innerHTML = `<option value="">API Key Error</option>`;
+                    return;
+                }
+                
+                selectEl.innerHTML = "";
+                
+                // Filter only models that support content generation
+                const validModels = data.models.filter(m => 
+                    m.supportedGenerationMethods && 
+                    m.supportedGenerationMethods.includes("generateContent")
+                );
+
+                if (validModels.length === 0) {
+                    selectEl.innerHTML = `<option value="">No valid models found</option>`;
+                    return;
+                }
+
+                validModels.forEach(m => {
+                    const opt = document.createElement("option");
+                    opt.value = m.name; // This directly includes "models/gemini-..."
+                    opt.textContent = m.displayName || m.name.replace("models/", "");
+                    selectEl.appendChild(opt);
+                });
+
+                // Auto-select a flash model if available
+                const flashModel = Array.from(selectEl.options).find(opt => opt.value.includes("flash"));
+                if (flashModel) selectEl.value = flashModel.value;
+
+            } catch (err) {
+                console.error(err);
+                selectEl.innerHTML = `<option value="">Error fetching models</option>`;
+            }
         }
 
+        function saveApiKey() {
+            const key = document.getElementById("apiKeyInput").value;
+            if(!key) return alert("Enter API key!");
+            localStorage.setItem("gemini_api_key", key);
+            alert("API Key saved! Fetching your available models...");
+            fetchAvailableModels(key);
+        }
+
+        // ================= AI GENERATION LOGIC =================
         let currentImageBase64 = "";
 
         async function handleVideoUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
+            
             const apiKey = localStorage.getItem("gemini_api_key") || document.getElementById("apiKeyInput").value;
             if (!apiKey) return alert("Please enter API Key first!");
+            
+            const selectedModel = document.getElementById("modelSelect").value;
+            if (!selectedModel) return alert("Please wait for models to load or check your API key!");
 
             document.getElementById("uploadSection").classList.add("hidden");
             document.getElementById("loadingIndicator").classList.remove("hidden");
             document.getElementById("resultsSection").classList.add("hidden");
+            document.getElementById("loadingText").innerText = "Extracting video frame...";
 
             const videoURL = URL.createObjectURL(file);
             document.getElementById("previewVideo").src = videoURL;
@@ -191,10 +244,12 @@
 
         async function callGeminiAPI(prompt, base64Image) {
             const apiKey = localStorage.getItem("gemini_api_key") || document.getElementById("apiKeyInput").value;
-            document.getElementById("loadingText").innerText = "Generating with gemini-1.5-flash...";
+            const selectedModel = document.getElementById("modelSelect").value; // exact model name like "models/gemini-1.5-flash-001"
             
-            // STRICTLY USING FLASH (Removed Pro forever)
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+            document.getElementById("loadingText").innerText = `Generating with ${selectedModel.replace("models/", "")}...`;
+            
+            // USING THE DYNAMICALLY FETCHED MODEL NAME!
+            const url = `https://generativelanguage.googleapis.com/v1beta/${selectedModel}:generateContent?key=${apiKey}`;
 
             try {
                 const response = await fetch(url, {
@@ -204,7 +259,11 @@
                 });
                 
                 const data = await response.json();
-                if (data.error) return alert("API Error: " + data.error.message);
+                if (data.error) {
+                    document.getElementById("uploadSection").classList.remove("hidden");
+                    document.getElementById("loadingIndicator").classList.add("hidden");
+                    return alert("API Error: " + data.error.message);
+                }
 
                 let textResponse = data.candidates[0].content.parts[0].text.replace(/```json/g, '').replace(/```/g, '').trim();
                 const resultJSON = JSON.parse(textResponse);
@@ -217,7 +276,7 @@
                 document.getElementById("loadingIndicator").classList.add("hidden");
                 document.getElementById("resultsSection").classList.remove("hidden");
             } catch (error) {
-                alert("Error! Please try again.");
+                alert("Error parsing AI response. Try changing the prompt or uploading again.");
                 document.getElementById("loadingIndicator").classList.add("hidden");
                 document.getElementById("uploadSection").classList.remove("hidden");
             }
@@ -245,4 +304,4 @@
         }
     </script>
 </body>
-</html> 
+</html>
