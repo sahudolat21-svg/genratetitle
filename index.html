@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TubeGenius AI - Video Metadata Generator</title>
+    <title>TubeGenius AI v2.0 - Video Metadata Generator</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -26,12 +26,12 @@
 </head>
 <body class="min-h-screen">
 
-    <!-- AUTHENTICATION SECTION (Login & Register) -->
+    <!-- AUTHENTICATION SECTION -->
     <div id="authSection" class="min-h-screen flex items-center justify-center p-6">
         <div class="glass-panel p-8 rounded-xl w-full max-w-md shadow-2xl flex flex-col gap-5">
             <div class="text-center mb-2">
                 <i class="fab fa-youtube text-5xl text-red-500 mb-4 drop-shadow-[0_0_10px_rgba(239,68,68,0.8)]"></i>
-                <h2 id="authTitle" class="text-2xl font-bold text-white">Login to TubeGenius</h2>
+                <h2 id="authTitle" class="text-2xl font-bold text-white">Login to TubeGenius <span class="text-sm text-blue-400">v2.0</span></h2>
                 <p id="authSubtitle" class="text-sm text-slate-400 mt-1">Welcome back! Please enter your details.</p>
             </div>
             
@@ -55,14 +55,14 @@
         </div>
     </div>
 
-    <!-- MAIN APP SECTION (Hidden initially) -->
+    <!-- MAIN APP SECTION -->
     <div id="mainApp" class="hidden min-h-screen flex flex-col">
         
         <!-- Header -->
         <header class="glass-panel sticky top-0 z-50 px-6 py-4 flex justify-between items-center shadow-lg">
             <div class="flex items-center gap-2 text-xl font-bold text-red-500">
                 <i class="fab fa-youtube"></i>
-                <span class="text-white hidden sm:block">TubeGenius AI</span>
+                <span class="text-white hidden sm:block">TubeGenius AI <span class="text-xs text-blue-400 ml-1">v2.0</span></span>
             </div>
             <div class="flex items-center gap-3">
                 <span class="text-sm text-slate-300 hidden md:inline">Hi, <span id="userDisplay" class="text-white font-bold"></span></span>
@@ -79,7 +79,6 @@
         <!-- Main Content -->
         <main class="flex-grow p-6 max-w-6xl mx-auto w-full flex flex-col gap-6">
             
-            <!-- Video Upload Section -->
             <section id="uploadSection" class="glass-panel p-10 rounded-xl text-center border-dashed border-2 border-slate-600 hover:border-red-500 transition cursor-pointer flex flex-col items-center justify-center min-h-[300px]">
                 <input type="file" id="videoInput" accept="video/*" class="hidden" onchange="handleVideoUpload(event)">
                 <i class="fas fa-cloud-upload-alt text-5xl text-slate-400 mb-4"></i>
@@ -90,20 +89,18 @@
                 </button>
             </section>
 
-            <!-- Hidden Video Element for Frame Extraction -->
             <video id="hiddenVideo" class="hidden" preload="metadata" crossorigin="anonymous"></video>
             <canvas id="hiddenCanvas" class="hidden"></canvas>
 
             <!-- Loading State -->
-            <div id="loadingIndicator" class="hidden text-center py-10">
+            <div id="loadingIndicator" class="hidden text-center py-10 flex flex-col items-center">
                 <i class="fas fa-spinner fa-spin text-4xl text-red-500 mb-3"></i>
-                <p class="text-lg text-slate-300" id="loadingText">Analyzing video and generating content...</p>
+                <p class="text-lg text-slate-300" id="loadingText">Extracting video frame...</p>
             </div>
 
             <!-- Results Section -->
             <div id="resultsSection" class="hidden flex flex-col md:flex-row gap-6">
                 
-                <!-- Left Column -->
                 <div class="w-full md:w-1/3 flex flex-col gap-6">
                     <div class="glass-panel p-4 rounded-xl">
                         <h3 class="font-bold mb-2 text-slate-300">Video Preview</h3>
@@ -119,7 +116,6 @@
                     </div>
                 </div>
 
-                <!-- Right Column -->
                 <div class="w-full md:w-2/3 flex flex-col gap-6">
                     <div class="glass-panel p-6 rounded-xl flex flex-col gap-4">
                         <div>
@@ -145,7 +141,6 @@
                         </div>
                     </div>
 
-                    <!-- Chat/Refine Section -->
                     <div class="glass-panel p-6 rounded-xl flex flex-col">
                         <h3 class="font-bold mb-2 text-slate-300"><i class="fas fa-magic text-yellow-400 mr-2"></i>Refine Results</h3>
                         <p class="text-xs text-slate-400 mb-3">Not happy? Tell AI to change it (e.g., "Make title in Hindi", "Add more emojis")</p>
@@ -172,21 +167,18 @@
             if (currentUser) {
                 showMainApp(currentUser);
             }
-            
             const savedKey = localStorage.getItem("gemini_api_key");
             if (savedKey) document.getElementById("apiKeyInput").value = savedKey;
         });
 
         function toggleAuthMode() {
             isLoginMode = !isLoginMode;
-            document.getElementById('authTitle').innerText = isLoginMode ? 'Login to TubeGenius' : 'Create an Account';
+            document.getElementById('authTitle').innerHTML = isLoginMode ? 'Login to TubeGenius <span class="text-sm text-blue-400">v2.0</span>' : 'Create an Account <span class="text-sm text-blue-400">v2.0</span>';
             document.getElementById('authSubtitle').innerText = isLoginMode ? 'Welcome back! Please enter your details.' : 'Register a new account to get started.';
             document.getElementById('authBtn').innerText = isLoginMode ? 'Login' : 'Register';
-            
             document.getElementById('authSwitchText').innerHTML = isLoginMode 
                 ? 'Don\'t have an account? <span class="text-blue-400 cursor-pointer hover:underline font-semibold" onclick="toggleAuthMode()">Register here</span>' 
                 : 'Already have an account? <span class="text-blue-400 cursor-pointer hover:underline font-semibold" onclick="toggleAuthMode()">Login here</span>';
-                
             document.getElementById('emailInput').value = "";
             document.getElementById('passwordInput').value = "";
         }
@@ -194,27 +186,17 @@
         function handleAuth() {
             const email = document.getElementById('emailInput').value.trim();
             const password = document.getElementById('passwordInput').value.trim();
-            
-            if (!email || !password) {
-                alert("Please enter both email and password!");
-                return;
-            }
+            if (!email || !password) return alert("Please enter both email and password!");
 
             let users = JSON.parse(localStorage.getItem('tubegenius_users') || '[]');
-
             if (isLoginMode) {
                 const userExists = users.find(u => u.email === email && u.password === password);
                 if (userExists) {
                     localStorage.setItem('currentUser', email);
                     showMainApp(email);
-                } else {
-                    alert("Invalid email or password!");
-                }
+                } else alert("Invalid email or password!");
             } else {
-                if (users.find(u => u.email === email)) {
-                    alert("This email is already registered! Please login.");
-                    return;
-                }
+                if (users.find(u => u.email === email)) return alert("This email is already registered! Please login.");
                 users.push({ email, password });
                 localStorage.setItem('tubegenius_users', JSON.stringify(users));
                 alert("Registration successful! You can now login.");
@@ -232,17 +214,14 @@
             localStorage.removeItem('currentUser');
             document.getElementById('authSection').classList.remove('hidden');
             document.getElementById('mainApp').classList.add('hidden');
-            document.getElementById('emailInput').value = "";
-            document.getElementById('passwordInput').value = "";
         }
 
         // ================= APP LOGIC (API & VIDEO) =================
-
         function saveApiKey() {
             const key = document.getElementById("apiKeyInput").value;
             if (key) {
                 localStorage.setItem("gemini_api_key", key);
-                alert("API Key saved securely in your browser!");
+                alert("API Key saved securely!");
             }
         }
 
@@ -253,21 +232,18 @@
             if (!file) return;
 
             const apiKey = localStorage.getItem("gemini_api_key") || document.getElementById("apiKeyInput").value;
-            if (!apiKey) {
-                alert("Please enter your Gemini API Key at the top right first!");
-                return;
-            }
+            if (!apiKey) return alert("Please enter your Gemini API Key at the top right first!");
 
             document.getElementById("uploadSection").classList.add("hidden");
             document.getElementById("loadingIndicator").classList.remove("hidden");
             document.getElementById("resultsSection").classList.add("hidden");
+            document.getElementById("loadingText").innerText = "Extracting video frame...";
 
             const videoURL = URL.createObjectURL(file);
             document.getElementById("previewVideo").src = videoURL;
             
             const hiddenVideo = document.getElementById("hiddenVideo");
             hiddenVideo.src = videoURL;
-            
             hiddenVideo.onloadeddata = () => { hiddenVideo.currentTime = 2; };
 
             hiddenVideo.onseeked = async () => {
@@ -276,10 +252,7 @@
                 canvas.height = hiddenVideo.videoHeight;
                 const ctx = canvas.getContext("2d");
                 ctx.drawImage(hiddenVideo, 0, 0, canvas.width, canvas.height);
-                
-                const dataURL = canvas.toDataURL("image/jpeg");
-                currentImageBase64 = dataURL.split(",")[1]; 
-
+                currentImageBase64 = canvas.toDataURL("image/jpeg").split(",")[1]; 
                 await generateInitialMetadata(currentImageBase64);
             };
         }
@@ -314,16 +287,14 @@
         async function callGeminiAPI(prompt, base64Image) {
             const apiKey = localStorage.getItem("gemini_api_key") || document.getElementById("apiKeyInput").value;
             
-            // USING gemini-1.5-pro to resolve the "model not found" issue
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${apiKey}`;
+            document.getElementById("loadingText").innerText = "Generating content with Gemini 1.5 Flash (v2)...";
+            
+            // USING 100% STABLE MODEL NAME
+            const safeModelName = "gemini-1.5-flash"; 
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/${safeModelName}:generateContent?key=${apiKey}`;
 
             const requestBody = {
-                contents: [{
-                    parts: [
-                        { text: prompt },
-                        { inline_data: { mime_type: "image/jpeg", data: base64Image } }
-                    ]
-                }]
+                contents: [{ parts: [ { text: prompt }, { inline_data: { mime_type: "image/jpeg", data: base64Image } } ] }]
             };
 
             try {
@@ -332,7 +303,7 @@
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(requestBody)
                 });
-
+                
                 const data = await response.json();
                 
                 if (data.error) {
@@ -342,22 +313,21 @@
                 }
 
                 let textResponse = data.candidates[0].content.parts[0].text;
+                
                 textResponse = textResponse.replace(/```json/g, '').replace(/```/g, '').trim();
                 
                 const resultJSON = JSON.parse(textResponse);
 
-                document.getElementById("resTitle").value = resultJSON.title;
-                document.getElementById("resDesc").value = resultJSON.description;
-                document.getElementById("resTags").value = resultJSON.tags;
-
-                createThumbnail(resultJSON.title);
+                document.getElementById("resTitle").value = resultJSON.title || "";
+                document.getElementById("resDesc").value = resultJSON.description || "";
+                document.getElementById("resTags").value = resultJSON.tags || "";
+                createThumbnail(resultJSON.title || "Awesome Video");
 
                 document.getElementById("loadingIndicator").classList.add("hidden");
                 document.getElementById("resultsSection").classList.remove("hidden");
-
             } catch (error) {
                 console.error("Error:", error);
-                alert("Failed to process API response. Make sure your API key is valid.");
+                alert("Failed to process API response. Ensure your API key is correct and you have an active internet connection.");
                 resetUI();
             }
         }
@@ -365,38 +335,34 @@
         function createThumbnail(title) {
             const canvas = document.getElementById("thumbnailCanvas");
             const hiddenCanvas = document.getElementById("hiddenCanvas");
-            
-            canvas.width = 1280;
-            canvas.height = 720;
+            canvas.width = 1280; canvas.height = 720;
             const ctx = canvas.getContext("2d");
-
-            ctx.drawImage(hiddenCanvas, 0, 0, canvas.width, canvas.height);
-
-            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-            gradient.addColorStop(0, "transparent");
-            gradient.addColorStop(1, "rgba(0,0,0,0.8)");
-            ctx.fillStyle = gradient;
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            ctx.fillStyle = "white";
-            ctx.font = "bold 70px Inter, sans-serif";
-            ctx.textAlign = "center";
-            ctx.shadowColor = "black";
-            ctx.shadowBlur = 10;
-            ctx.shadowOffsetX = 5;
-            ctx.shadowOffsetY = 5;
             
-            const words = title.split(' ');
-            let line = '';
+            ctx.drawImage(hiddenCanvas, 0, 0, canvas.width, canvas.height);
+            
+            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            gradient.addColorStop(0, "transparent"); 
+            gradient.addColorStop(1, "rgba(0,0,0,0.85)");
+            ctx.fillStyle = gradient; 
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.fillStyle = "white"; 
+            ctx.font = "bold 70px Inter, sans-serif";
+            ctx.textAlign = "center"; 
+            ctx.shadowColor = "black"; 
+            ctx.shadowBlur = 15;
+            ctx.shadowOffsetX = 4; 
+            ctx.shadowOffsetY = 4;
+            
+            const words = title.split(' '); 
+            let line = ''; 
             let y = canvas.height - 150;
-
+            
             for(let n = 0; n < words.length; n++) {
                 let testLine = line + words[n] + ' ';
-                let metrics = ctx.measureText(testLine);
-                let testWidth = metrics.width;
-                if (testWidth > canvas.width - 100 && n > 0) {
+                if (ctx.measureText(testLine).width > canvas.width - 100 && n > 0) {
                     ctx.fillText(line, canvas.width/2, y);
-                    line = words[n] + ' ';
+                    line = words[n] + ' '; 
                     y += 80;
                 } else {
                     line = testLine;
@@ -406,16 +372,14 @@
         }
 
         function downloadThumbnail() {
-            const canvas = document.getElementById("thumbnailCanvas");
             const link = document.createElement("a");
-            link.download = "thumbnail.jpg";
-            link.href = canvas.toDataURL("image/jpeg");
+            link.download = "youtube-thumbnail.jpg";
+            link.href = document.getElementById("thumbnailCanvas").toDataURL("image/jpeg");
             link.click();
         }
 
         function copyText(elementId) {
-            const el = document.getElementById(elementId);
-            el.select();
+            document.getElementById(elementId).select();
             document.execCommand("copy");
             alert("Copied to clipboard!");
         }
