@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title id="pageTitle"></title>
+    <title id="pageTitle">Genratetag</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -16,17 +16,17 @@
 </head>
 <body class="min-h-screen flex flex-col">
 
-    <!-- INITIAL LOADING SPINNER (Shows while checking login status) -->
+    <!-- INITIAL LOADING SPINNER -->
     <div id="initialLoader" class="min-h-screen flex items-center justify-center">
         <i class="fas fa-circle-notch fa-spin text-5xl text-indigo-500"></i>
     </div>
 
-    <!-- LOGIN UI (Hidden by default) -->
+    <!-- LOGIN UI -->
     <div id="authSection" class="hidden min-h-screen items-center justify-center p-6">
         <div class="glass-panel p-8 rounded-xl w-full max-w-md shadow-2xl flex flex-col gap-4 border-t-4 border-indigo-500">
             <div class="text-center mb-2">
                 <i class="fas fa-tags text-5xl text-indigo-500 mb-2"></i>
-                <h2 id="dynamicSiteName1" class="text-2xl font-bold text-white transition-opacity duration-300 opacity-0"></h2>
+                <h2 id="dynamicSiteName1" class="text-2xl font-bold text-white transition-opacity duration-300">Genratetag</h2>
             </div>
             
             <input type="email" id="emailInput" placeholder="Email Address" class="w-full bg-slate-800 border border-slate-600 rounded px-4 py-3 focus:outline-none focus:border-indigo-500 transition">
@@ -34,7 +34,6 @@
             
             <div id="authMessage" class="hidden text-center text-sm p-2 rounded"></div>
             
-            <!-- SEPARATE LOGIN & REGISTER BUTTONS -->
             <button onclick="handleLogin()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-lg mt-2 transition shadow-lg">Login</button>
             
             <div class="flex items-center my-1">
@@ -47,11 +46,11 @@
         </div>
     </div>
 
-    <!-- MAIN APP UI (Hidden by default) -->
+    <!-- MAIN APP UI -->
     <div id="mainApp" class="hidden min-h-screen flex-col">
         <header class="glass-panel sticky top-0 z-50 px-6 py-4 flex justify-between items-center shadow-lg border-b-2 border-indigo-500">
             <div class="flex items-center gap-2 text-xl font-bold text-indigo-500">
-                <i class="fas fa-tags"></i> <span id="dynamicSiteName2" class="text-white"></span>
+                <i class="fas fa-tags"></i> <span id="dynamicSiteName2" class="text-white">Genratetag</span>
             </div>
             <div class="flex gap-2">
                 <button onclick="showHome()" class="bg-slate-700 px-4 py-2 rounded text-sm font-semibold hover:bg-slate-600 transition">Home</button>
@@ -70,7 +69,7 @@
                 <input type="file" id="videoInput" accept="video/*" class="hidden" onchange="handleVideoUpload(event)">
                 <i class="fas fa-cloud-upload-alt text-5xl text-indigo-400 mb-4"></i>
                 <h2 class="text-2xl font-bold mb-2">Upload Video for Metadata</h2>
-                <button onclick="document.getElementById('videoInput').click()" id="dynamicUploadBtn" class="bg-indigo-600 hover:bg-indigo-500 text-white px-8 py-3 rounded-lg font-bold mt-4 transition"></button>
+                <button onclick="document.getElementById('videoInput').click()" id="dynamicUploadBtn" class="bg-indigo-600 hover:bg-indigo-500 text-white px-8 py-3 rounded-lg font-bold mt-4 transition">Select Video File</button>
             </section>
 
             <video id="hiddenVideo" class="hidden" preload="metadata" crossorigin="anonymous"></video>
@@ -117,11 +116,9 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // Secure Session Storage (Survives Reload)
         let activeUserSession = localStorage.getItem("genratetag_session") || null;
 
         document.addEventListener("DOMContentLoaded", () => {
-            // Fetch UI Config from Cloud First
             db.collection("admin_settings").doc("ui_config").get().then(doc => {
                 const siteTitle = document.getElementById('dynamicSiteName1');
                 if(doc.exists) {
@@ -131,15 +128,8 @@
                     siteTitle.innerText = name;
                     document.getElementById('dynamicSiteName2').innerText = name;
                     document.getElementById('dynamicUploadBtn').innerText = data.btnName || "Upload Video";
-                } else {
-                    document.getElementById('pageTitle').innerText = "Genratetag";
-                    siteTitle.innerText = "Genratetag";
-                    document.getElementById('dynamicSiteName2').innerText = "Genratetag";
-                    document.getElementById('dynamicUploadBtn').innerText = "Select Video File";
                 }
-                siteTitle.classList.remove('opacity-0');
-
-                // Logic to show correct screen based on login state
+                
                 document.getElementById('initialLoader').classList.add('hidden');
                 
                 if (activeUserSession) {
@@ -148,53 +138,61 @@
                 } else {
                     document.getElementById('authSection').style.display = 'flex';
                 }
+            }).catch(() => {
+                document.getElementById('initialLoader').classList.add('hidden');
+                document.getElementById('authSection').style.display = 'flex';
             });
         });
 
-        // LOGIN LOGIC
         async function handleLogin() {
             const email = document.getElementById('emailInput').value.trim().toLowerCase();
             const password = document.getElementById('passwordInput').value.trim();
             if (!email || !password) return alert("⚠️ Please enter Email and Password");
 
-            const doc = await db.collection("users").doc(email).get();
-
-            if (!doc.exists) return alert("❌ Account not found! Please click 'Register Account' first.");
-            if (doc.data().password !== password) return alert("❌ Wrong password!");
-            
-            activeUserSession = email; 
-            localStorage.setItem("genratetag_session", email); // Save session securely
-            
-            document.getElementById('authSection').style.display = 'none';
-            document.getElementById('mainApp').style.display = 'flex';
-            document.getElementById("uploadSection").classList.remove("hidden");
+            try {
+                const doc = await db.collection("users").doc(email).get();
+                if (!doc.exists) return alert("❌ Account not found! Please click 'Register Account' first.");
+                if (doc.data().password !== password) return alert("❌ Wrong password!");
+                
+                activeUserSession = email; 
+                localStorage.setItem("genratetag_session", email);
+                
+                document.getElementById('authSection').style.display = 'none';
+                document.getElementById('mainApp').style.display = 'flex';
+                document.getElementById("uploadSection").classList.remove("hidden");
+            } catch(e) {
+                alert("Database error. Please try again.");
+            }
         }
 
-        // REGISTER LOGIC
         async function handleRegister() {
             const email = document.getElementById('emailInput').value.trim().toLowerCase();
             const password = document.getElementById('passwordInput').value.trim();
             if (!email || !password) return alert("⚠️ Please enter Email and Password to register");
 
-            const userRef = db.collection("users").doc(email);
-            const doc = await userRef.get();
+            try {
+                const userRef = db.collection("users").doc(email);
+                const doc = await userRef.get();
 
-            if (doc.exists) return alert("⚠️ This Email is already registered! Please click 'Login' instead.");
-            
-            await userRef.set({ email, password, createdAt: new Date().toISOString() });
-            alert("✅ Account created successfully! You are now logged in.");
-            
-            activeUserSession = email; 
-            localStorage.setItem("genratetag_session", email); // Save session securely
-            
-            document.getElementById('authSection').style.display = 'none';
-            document.getElementById('mainApp').style.display = 'flex';
-            document.getElementById("uploadSection").classList.remove("hidden");
+                if (doc.exists) return alert("⚠️ This Email is already registered! Please click 'Login' instead.");
+                
+                await userRef.set({ email, password, createdAt: new Date().toISOString() });
+                alert("✅ Account created successfully! You are now logged in.");
+                
+                activeUserSession = email; 
+                localStorage.setItem("genratetag_session", email);
+                
+                document.getElementById('authSection').style.display = 'none';
+                document.getElementById('mainApp').style.display = 'flex';
+                document.getElementById("uploadSection").classList.remove("hidden");
+            } catch(e) {
+                alert("Database error. Please try again.");
+            }
         }
 
         function logout() {
             activeUserSession = null; 
-            localStorage.removeItem("genratetag_session"); // Remove session securely
+            localStorage.removeItem("genratetag_session");
             
             document.getElementById('emailInput').value = "";
             document.getElementById('passwordInput').value = "";
@@ -216,20 +214,24 @@
             const grid = document.getElementById("historyGrid");
             grid.innerHTML = '<div class="col-span-full text-center text-slate-400">Loading...</div>';
             
-            const snapshot = await db.collection("users").doc(activeUserSession).collection("history").orderBy("timestamp", "desc").limit(12).get();
-            grid.innerHTML = "";
-            
-            if(snapshot.empty) {
-                grid.innerHTML = '<div class="col-span-full text-center text-slate-400">No history found.</div>';
-                return;
-            }
+            try {
+                const snapshot = await db.collection("users").doc(activeUserSession).collection("history").orderBy("timestamp", "desc").limit(12).get();
+                grid.innerHTML = "";
+                
+                if(snapshot.empty) {
+                    grid.innerHTML = '<div class="col-span-full text-center text-slate-400">No history found.</div>';
+                    return;
+                }
 
-            snapshot.forEach(doc => {
-                const item = doc.data();
-                grid.innerHTML += `<div class="glass-panel p-3 rounded cursor-pointer hover:border-indigo-500 transition border border-transparent" onclick='loadHistoryItem(${JSON.stringify(item.title).replace(/'/g, "&apos;")}, ${JSON.stringify(item.desc).replace(/'/g, "&apos;")}, ${JSON.stringify(item.tags).replace(/'/g, "&apos;")}, "${item.image}")'>
-                    <img src="${item.image}" class="w-full h-32 object-cover rounded mb-2"><p class="text-sm font-semibold truncate">${item.title}</p>
-                </div>`;
-            });
+                snapshot.forEach(doc => {
+                    const item = doc.data();
+                    grid.innerHTML += `<div class="glass-panel p-3 rounded cursor-pointer hover:border-indigo-500 transition border border-transparent" onclick='loadHistoryItem(${JSON.stringify(item.title).replace(/'/g, "&apos;")}, ${JSON.stringify(item.desc).replace(/'/g, "&apos;")}, ${JSON.stringify(item.tags).replace(/'/g, "&apos;")}, "${item.image}")'>
+                        <img src="${item.image}" class="w-full h-32 object-cover rounded mb-2"><p class="text-sm font-semibold truncate">${item.title}</p>
+                    </div>`;
+                });
+            } catch (e) {
+                grid.innerHTML = '<div class="col-span-full text-center text-red-400">Error loading history.</div>';
+            }
         }
 
         function loadHistoryItem(title, desc, tags, image) {
@@ -255,63 +257,67 @@
             document.getElementById("historyPreviewImg").classList.add("hidden");
             document.getElementById("thumbnailCanvas").classList.remove("hidden");
 
-            const adminDoc = await db.collection("admin_settings").doc("api_config").get();
-            if(!adminDoc.exists || !adminDoc.data().gemini_key) {
-                alert("Admin has not set the API key yet!"); 
-                showHome();
-                return;
-            }
-            const apiKey = adminDoc.data().gemini_key;
-
-            const videoURL = URL.createObjectURL(file);
-            const hiddenVid = document.getElementById("hiddenVideo");
-            hiddenVid.src = videoURL;
-            
-            hiddenVid.onloadedmetadata = () => { hiddenVid.currentTime = Math.min(2, hiddenVid.duration * 0.2); };
-            hiddenVid.onseeked = async () => {
-                document.getElementById("loadingText").innerText = "Extracting frame & analyzing AI...";
-                const canvas = document.getElementById("hiddenCanvas");
-                canvas.width = 1280; canvas.height = 720;
-                canvas.getContext("2d").drawImage(hiddenVid, 0, 0, 1280, 720);
-                const b64 = canvas.toDataURL("image/jpeg", 0.8).split(",")[1];
-                
-                const prompt = `You are a YouTube SEO expert. Generate JSON: {"title": "Catchy Title", "description": "SEO Desc", "tags": "tag1, tag2", "thumbText": "SHORT BOLD"}`;
-                
-                // FIXED AI ERROR API CALL (v1beta & gemini-1.5-flash)
-                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
-                
-                try {
-                    const res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: "image/jpeg", data: b64 } }] }] }) });
-                    const data = await res.json();
-                    
-                    if(data.error) {
-                        alert("AI Error: " + data.error.message);
-                        showHome(); return;
-                    }
-                    
-                    let textRes = data.candidates[0].content.parts[0].text.replace(/```json|```/g, '').trim();
-                    let json = JSON.parse(textRes);
-                    
-                    document.getElementById("resTitle").value = json.title || "";
-                    document.getElementById("resDesc").value = json.description || "";
-                    document.getElementById("resTags").value = json.tags || "";
-                    
-                    createThumbnail(json.thumbText || json.title);
-                    
-                    document.getElementById("loadingIndicator").classList.add("hidden");
-                    document.getElementById("resultsSection").classList.remove("hidden");
-                    
-                    setTimeout(() => {
-                        db.collection("users").doc(activeUserSession).collection("history").add({
-                            title: json.title, desc: json.description, tags: json.tags, image: document.getElementById("thumbnailCanvas").toDataURL("image/jpeg", 0.5), timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                        });
-                    }, 500);
-
-                } catch(e) {
-                    alert("Network or Processing Error. Please try again.");
+            try {
+                const adminDoc = await db.collection("admin_settings").doc("api_config").get();
+                if(!adminDoc.exists || !adminDoc.data().gemini_key) {
+                    alert("Admin has not set the API key yet!"); 
                     showHome();
+                    return;
                 }
-            };
+                const apiKey = adminDoc.data().gemini_key;
+
+                const videoURL = URL.createObjectURL(file);
+                const hiddenVid = document.getElementById("hiddenVideo");
+                hiddenVid.src = videoURL;
+                
+                hiddenVid.onloadedmetadata = () => { hiddenVid.currentTime = Math.min(2, hiddenVid.duration * 0.2); };
+                hiddenVid.onseeked = async () => {
+                    document.getElementById("loadingText").innerText = "Extracting frame & analyzing AI...";
+                    const canvas = document.getElementById("hiddenCanvas");
+                    canvas.width = 1280; canvas.height = 720;
+                    canvas.getContext("2d").drawImage(hiddenVid, 0, 0, 1280, 720);
+                    const b64 = canvas.toDataURL("image/jpeg", 0.8).split(",")[1];
+                    
+                    const prompt = `You are a YouTube SEO expert. Generate JSON: {"title": "Catchy Title", "description": "SEO Desc", "tags": "tag1, tag2", "thumbText": "SHORT BOLD"}`;
+                    
+                    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+                    
+                    try {
+                        const res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: "image/jpeg", data: b64 } }] }] }) });
+                        const data = await res.json();
+                        
+                        if(data.error) {
+                            alert("AI Error: " + data.error.message);
+                            showHome(); return;
+                        }
+                        
+                        let textRes = data.candidates[0].content.parts[0].text.replace(/```json|```/g, '').trim();
+                        let json = JSON.parse(textRes);
+                        
+                        document.getElementById("resTitle").value = json.title || "";
+                        document.getElementById("resDesc").value = json.description || "";
+                        document.getElementById("resTags").value = json.tags || "";
+                        
+                        createThumbnail(json.thumbText || json.title);
+                        
+                        document.getElementById("loadingIndicator").classList.add("hidden");
+                        document.getElementById("resultsSection").classList.remove("hidden");
+                        
+                        setTimeout(() => {
+                            db.collection("users").doc(activeUserSession).collection("history").add({
+                                title: json.title, desc: json.description, tags: json.tags, image: document.getElementById("thumbnailCanvas").toDataURL("image/jpeg", 0.5), timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                            });
+                        }, 500);
+
+                    } catch(e) {
+                        alert("Network or Processing Error. Please try again.");
+                        showHome();
+                    }
+                };
+            } catch (e) {
+                alert("Failed to connect to configuration database.");
+                showHome();
+            }
         }
 
         function createThumbnail(mainText) {
