@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title id="pageTitle">Genratetag</title>
+    <title id="pageTitle"></title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -14,27 +14,44 @@
         .glass-panel { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
     </style>
 </head>
-<body class="min-h-screen">
+<body class="min-h-screen flex flex-col">
 
-    <!-- LOGIN UI -->
-    <div id="authSection" class="min-h-screen flex items-center justify-center p-6">
+    <!-- INITIAL LOADING SPINNER (Shows while checking login status) -->
+    <div id="initialLoader" class="min-h-screen flex items-center justify-center">
+        <i class="fas fa-circle-notch fa-spin text-5xl text-indigo-500"></i>
+    </div>
+
+    <!-- LOGIN UI (Hidden by default) -->
+    <div id="authSection" class="hidden min-h-screen items-center justify-center p-6">
         <div class="glass-panel p-8 rounded-xl w-full max-w-md shadow-2xl flex flex-col gap-4 border-t-4 border-indigo-500">
             <div class="text-center mb-2">
                 <i class="fas fa-tags text-5xl text-indigo-500 mb-2"></i>
-                <h2 id="dynamicSiteName1" class="text-2xl font-bold text-white">Genratetag</h2>
+                <h2 id="dynamicSiteName1" class="text-2xl font-bold text-white transition-opacity duration-300 opacity-0"></h2>
             </div>
-            <input type="email" id="emailInput" placeholder="Email Address" class="w-full bg-slate-800 border border-slate-600 rounded px-4 py-3 focus:outline-none">
-            <input type="password" id="passwordInput" placeholder="Password" class="w-full bg-slate-800 border border-slate-600 rounded px-4 py-3 focus:outline-none" onkeypress="if(event.key === 'Enter') handleAuth()">
+            
+            <input type="email" id="emailInput" placeholder="Email Address" class="w-full bg-slate-800 border border-slate-600 rounded px-4 py-3 focus:outline-none focus:border-indigo-500 transition">
+            <input type="password" id="passwordInput" placeholder="Password" class="w-full bg-slate-800 border border-slate-600 rounded px-4 py-3 focus:outline-none focus:border-indigo-500 transition" onkeypress="if(event.key === 'Enter') handleLogin()">
+            
             <div id="authMessage" class="hidden text-center text-sm p-2 rounded"></div>
-            <button onclick="handleAuth()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-lg mt-2">Login / Register</button>
+            
+            <!-- SEPARATE LOGIN & REGISTER BUTTONS -->
+            <button onclick="handleLogin()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-lg mt-2 transition shadow-lg">Login</button>
+            
+            <div class="flex items-center my-1">
+                <div class="flex-grow border-t border-slate-600"></div>
+                <span class="px-3 text-slate-400 text-xs uppercase font-semibold">Or</span>
+                <div class="flex-grow border-t border-slate-600"></div>
+            </div>
+            
+            <button onclick="handleRegister()" class="w-full bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 rounded-lg transition shadow-lg">Register Account</button>
         </div>
     </div>
 
-    <!-- MAIN APP UI -->
-    <div id="mainApp" class="hidden min-h-screen flex flex-col">
+    <!-- MAIN APP UI (Hidden by default) -->
+    <div id="mainApp" class="hidden min-h-screen flex-col">
         <header class="glass-panel sticky top-0 z-50 px-6 py-4 flex justify-between items-center shadow-lg border-b-2 border-indigo-500">
             <div class="flex items-center gap-2 text-xl font-bold text-indigo-500">
-                <i class="fas fa-tags"></i> <span id="dynamicSiteName2" class="text-white">Genratetag</span>
+                <i class="fas fa-tags"></i> <span id="dynamicSiteName2" class="text-white"></span>
             </div>
             <div class="flex gap-2">
                 <button onclick="showHome()" class="bg-slate-700 px-4 py-2 rounded text-sm font-semibold hover:bg-slate-600 transition">Home</button>
@@ -53,8 +70,7 @@
                 <input type="file" id="videoInput" accept="video/*" class="hidden" onchange="handleVideoUpload(event)">
                 <i class="fas fa-cloud-upload-alt text-5xl text-indigo-400 mb-4"></i>
                 <h2 class="text-2xl font-bold mb-2">Upload Video for Metadata</h2>
-                <p class="text-slate-400 mb-4 text-sm">Select any MP4, WebM or MKV file.</p>
-                <button onclick="document.getElementById('videoInput').click()" id="dynamicUploadBtn" class="bg-indigo-600 hover:bg-indigo-500 text-white px-8 py-3 rounded-lg font-bold mt-4 transition">Select Video File</button>
+                <button onclick="document.getElementById('videoInput').click()" id="dynamicUploadBtn" class="bg-indigo-600 hover:bg-indigo-500 text-white px-8 py-3 rounded-lg font-bold mt-4 transition"></button>
             </section>
 
             <video id="hiddenVideo" class="hidden" preload="metadata" crossorigin="anonymous"></video>
@@ -101,49 +117,89 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // STRICTLY NO LOCAL STORAGE - Kept in volatile memory
-        let activeUserSession = null; 
+        // Secure Session Storage (Survives Reload)
+        let activeUserSession = localStorage.getItem("genratetag_session") || null;
 
-        // Fetch UI Config from Admin Panel dynamically on load
-        db.collection("admin_settings").doc("ui_config").get().then(doc => {
-            if(doc.exists) {
-                const data = doc.data();
-                if(data.siteName) {
-                    document.getElementById('pageTitle').innerText = data.siteName;
-                    document.getElementById('dynamicSiteName1').innerText = data.siteName;
-                    document.getElementById('dynamicSiteName2').innerText = data.siteName;
+        document.addEventListener("DOMContentLoaded", () => {
+            // Fetch UI Config from Cloud First
+            db.collection("admin_settings").doc("ui_config").get().then(doc => {
+                const siteTitle = document.getElementById('dynamicSiteName1');
+                if(doc.exists) {
+                    const data = doc.data();
+                    const name = data.siteName || "Genratetag";
+                    document.getElementById('pageTitle').innerText = name;
+                    siteTitle.innerText = name;
+                    document.getElementById('dynamicSiteName2').innerText = name;
+                    document.getElementById('dynamicUploadBtn').innerText = data.btnName || "Upload Video";
+                } else {
+                    document.getElementById('pageTitle').innerText = "Genratetag";
+                    siteTitle.innerText = "Genratetag";
+                    document.getElementById('dynamicSiteName2').innerText = "Genratetag";
+                    document.getElementById('dynamicUploadBtn').innerText = "Select Video File";
                 }
-                if(data.btnName) document.getElementById('dynamicUploadBtn').innerText = data.btnName;
-            }
+                siteTitle.classList.remove('opacity-0');
+
+                // Logic to show correct screen based on login state
+                document.getElementById('initialLoader').classList.add('hidden');
+                
+                if (activeUserSession) {
+                    document.getElementById('mainApp').style.display = 'flex';
+                    document.getElementById("uploadSection").classList.remove("hidden");
+                } else {
+                    document.getElementById('authSection').style.display = 'flex';
+                }
+            });
         });
 
-        async function handleAuth() {
+        // LOGIN LOGIC
+        async function handleLogin() {
             const email = document.getElementById('emailInput').value.trim().toLowerCase();
             const password = document.getElementById('passwordInput').value.trim();
-            if (!email || !password) return alert("Enter credentials");
+            if (!email || !password) return alert("⚠️ Please enter Email and Password");
+
+            const doc = await db.collection("users").doc(email).get();
+
+            if (!doc.exists) return alert("❌ Account not found! Please click 'Register Account' first.");
+            if (doc.data().password !== password) return alert("❌ Wrong password!");
+            
+            activeUserSession = email; 
+            localStorage.setItem("genratetag_session", email); // Save session securely
+            
+            document.getElementById('authSection').style.display = 'none';
+            document.getElementById('mainApp').style.display = 'flex';
+            document.getElementById("uploadSection").classList.remove("hidden");
+        }
+
+        // REGISTER LOGIC
+        async function handleRegister() {
+            const email = document.getElementById('emailInput').value.trim().toLowerCase();
+            const password = document.getElementById('passwordInput').value.trim();
+            if (!email || !password) return alert("⚠️ Please enter Email and Password to register");
 
             const userRef = db.collection("users").doc(email);
             const doc = await userRef.get();
 
-            if (!doc.exists) {
-                await userRef.set({ email, password, createdAt: new Date().toISOString() });
-                alert("Account Created! You are logged in.");
-            } else {
-                if (doc.data().password !== password) return alert("Wrong password!");
-            }
+            if (doc.exists) return alert("⚠️ This Email is already registered! Please click 'Login' instead.");
             
-            activeUserSession = email; // Save to Memory ONLY
-            document.getElementById('authSection').classList.add('hidden');
-            document.getElementById('mainApp').classList.remove('hidden');
+            await userRef.set({ email, password, createdAt: new Date().toISOString() });
+            alert("✅ Account created successfully! You are now logged in.");
+            
+            activeUserSession = email; 
+            localStorage.setItem("genratetag_session", email); // Save session securely
+            
+            document.getElementById('authSection').style.display = 'none';
+            document.getElementById('mainApp').style.display = 'flex';
             document.getElementById("uploadSection").classList.remove("hidden");
         }
 
         function logout() {
-            activeUserSession = null; // Clear memory
+            activeUserSession = null; 
+            localStorage.removeItem("genratetag_session"); // Remove session securely
+            
             document.getElementById('emailInput').value = "";
             document.getElementById('passwordInput').value = "";
-            document.getElementById('authSection').classList.remove('hidden');
-            document.getElementById('mainApp').classList.add('hidden');
+            document.getElementById('mainApp').style.display = 'none';
+            document.getElementById('authSection').style.display = 'flex';
         }
 
         function showHome() {
@@ -199,7 +255,6 @@
             document.getElementById("historyPreviewImg").classList.add("hidden");
             document.getElementById("thumbnailCanvas").classList.remove("hidden");
 
-            // Fetch API Key strictly from cloud (No local storage)
             const adminDoc = await db.collection("admin_settings").doc("api_config").get();
             if(!adminDoc.exists || !adminDoc.data().gemini_key) {
                 alert("Admin has not set the API key yet!"); 
@@ -222,7 +277,7 @@
                 
                 const prompt = `You are a YouTube SEO expert. Generate JSON: {"title": "Catchy Title", "description": "SEO Desc", "tags": "tag1, tag2", "thumbText": "SHORT BOLD"}`;
                 
-                // FIXED API URL: Changed v1 to v1beta
+                // FIXED AI ERROR API CALL (v1beta & gemini-1.5-flash)
                 const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
                 
                 try {
@@ -246,7 +301,6 @@
                     document.getElementById("loadingIndicator").classList.add("hidden");
                     document.getElementById("resultsSection").classList.remove("hidden");
                     
-                    // Save to Firebase immediately
                     setTimeout(() => {
                         db.collection("users").doc(activeUserSession).collection("history").add({
                             title: json.title, desc: json.description, tags: json.tags, image: document.getElementById("thumbnailCanvas").toDataURL("image/jpeg", 0.5), timestamp: firebase.firestore.FieldValue.serverTimestamp()
