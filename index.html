@@ -6,6 +6,11 @@
     <title>Genratetag - AI Video Metadata & Thumbnail Generator</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Firebase SDK Compat Scripts for Database -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         body { font-family: 'Inter', sans-serif; background-color: #0f1115; color: #e2e8f0; }
@@ -23,7 +28,7 @@
             <div class="text-center mb-2">
                 <i class="fas fa-tags text-5xl text-indigo-500 mb-4 drop-shadow-[0_0_10px_rgba(99,102,241,0.8)]"></i>
                 <h2 id="authTitle" class="text-2xl font-bold text-white">Genratetag</h2>
-                <p id="authSubtitle" class="text-sm text-slate-400 mt-1">Please login to continue.</p>
+                <p id="authSubtitle" class="text-sm text-slate-400 mt-1">Cloud Database Synchronized.</p>
             </div>
             
             <div class="flex flex-col gap-4">
@@ -41,14 +46,15 @@
     <!-- MAIN APP SECTION -->
     <div id="mainApp" class="hidden min-h-screen flex flex-col">
         <header class="glass-panel sticky top-0 z-50 px-6 py-4 flex justify-between items-center shadow-lg border-b-2 border-b-indigo-500 flex-wrap gap-4">
-            <div class="flex items-center gap-2 text-xl font-bold text-indigo-500">
+            <!-- SECRET ADMIN LOCK: Double click logo to enter API Key securely -->
+            <div class="flex items-center gap-2 text-xl font-bold text-indigo-500 cursor-pointer" title="Double click to set API Key" ondblclick="setupAdminKey()">
                 <i class="fas fa-tags"></i>
                 <span class="text-white">Genratetag</span>
             </div>
             <div class="flex items-center gap-2 flex-wrap">
-                <button onclick="showHome()" class="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded text-sm transition font-semibold" title="Home"><i class="fas fa-home"></i> <span class="hidden md:inline ml-1">Home</span></button>
-                <button onclick="showHistory()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded text-sm transition font-semibold" title="History"><i class="fas fa-history"></i> <span class="hidden md:inline ml-1">History</span></button>
-                <button onclick="logout()" class="bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded text-sm transition" title="Logout"><i class="fas fa-sign-out-alt"></i></button>
+                <button onclick="showHome()" class="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded text-sm transition font-semibold"><i class="fas fa-home"></i> Home</button>
+                <button onclick="showHistory()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded text-sm transition font-semibold"><i class="fas fa-history"></i> History</button>
+                <button onclick="logout()" class="bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded text-sm transition"><i class="fas fa-sign-out-alt"></i></button>
             </div>
         </header>
 
@@ -57,8 +63,8 @@
             <!-- HISTORY SECTION -->
             <section id="historySection" class="hidden glass-panel p-6 rounded-xl flex flex-col gap-4">
                 <div class="flex justify-between items-center border-b border-slate-700 pb-2">
-                    <h2 class="text-2xl font-bold text-white"><i class="fas fa-history text-indigo-400 mr-2"></i>Your History</h2>
-                    <button onclick="clearHistory()" class="text-sm bg-red-600 hover:bg-red-500 px-3 py-1 rounded text-white transition"><i class="fas fa-trash"></i> Clear</button>
+                    <h2 class="text-2xl font-bold text-white"><i class="fas fa-history text-indigo-400 mr-2"></i>Cloud Database History</h2>
+                    <button onclick="clearHistory()" class="text-sm bg-red-600 hover:bg-red-500 px-3 py-1 rounded text-white transition"><i class="fas fa-trash"></i> Clear Cloud History</button>
                 </div>
                 <div id="historyGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-4"></div>
             </section>
@@ -67,8 +73,8 @@
             <section id="uploadSection" class="glass-panel p-10 rounded-xl text-center border-dashed border-2 border-slate-600 hover:border-indigo-500 transition cursor-pointer flex flex-col items-center justify-center min-h-[300px]">
                 <input type="file" id="videoInput" accept="video/*" class="hidden" onchange="handleVideoUpload(event)">
                 <i class="fas fa-cloud-upload-alt text-5xl text-indigo-400 mb-4"></i>
-                <h2 class="text-2xl font-bold mb-2">Upload Video to Generate Tags, Title & Thumbnail</h2>
-                <p class="text-slate-400 mb-4 text-sm">Select any MP4, WebM or MKV file. Fully automated AI generation.</p>
+                <h2 class="text-2xl font-bold mb-2">Upload Video to Generate Metadata</h2>
+                <p class="text-slate-400 mb-4 text-sm">Select any MP4, WebM or MKV file. History syncs automatically with Firestore Database.</p>
                 <button onclick="document.getElementById('videoInput').click()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-8 py-3 rounded-lg font-bold shadow-lg transition mt-4">Select Video File</button>
             </section>
 
@@ -137,21 +143,47 @@
 
     <script>
         // ========================================================
-        // 🔑 API KEY CONFIGURATION: 
-        // Yahan apni Google Gemini API Key dal do (e.g. "AIzaSy...")
+        // 🔥 FIREBASE DATABASE CONFIGURATION (User provided)
         // ========================================================
-        const SECRET_KEY_PART_1 = "YAHAN_APNI_API_KEY_DAALO"; 
-        
-        function getAPIKey() {
-            return SECRET_KEY_PART_1;
-        }
+        const firebaseConfig = {
+            apiKey: "AIzaSyCEJaT600Z1rIbMeduSp4PV1LwpQi1QLWY",
+            authDomain: "genratetag-7f9ae.firebaseapp.com",
+            projectId: "genratetag-7f9ae",
+            storageBucket: "genratetag-7f9ae.firebasestorage.app",
+            messagingSenderId: "538331491651",
+            appId: "1:538331491651:web:bbb66e84dd3d7ded4a53f6",
+            measurementId: "G-DSX0D9M7DM"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
 
         let isLoginMode = true;
+        let currentUserEmail = null;
 
+        // Auto-login if user is already in LocalStorage (No login needed on refresh)
         document.addEventListener("DOMContentLoaded", () => {
-            const currentUser = localStorage.getItem("currentUser");
-            if (currentUser) showMainApp(currentUser);
+            const savedUser = localStorage.getItem("currentUser");
+            if (savedUser) {
+                currentUserEmail = savedUser;
+                showMainApp(savedUser);
+            }
         });
+
+        // Secret Admin Panel to safely store Gemini API Key without exposing it
+        function setupAdminKey() {
+            const currentKey = localStorage.getItem("gemini_api_key") || "";
+            const key = prompt("🔒 SECRET ADMIN PANEL 🔒\nEnter your Gemini API Key:", currentKey);
+            if (key !== null) {
+                if (key.trim() === "") {
+                    localStorage.removeItem("gemini_api_key");
+                } else {
+                    localStorage.setItem("gemini_api_key", key.trim());
+                    alert("✅ API Key Saved Securely!");
+                }
+            }
+        }
 
         function showAuthMessage(msg, type) {
             const msgBox = document.getElementById('authMessage');
@@ -159,14 +191,14 @@
             msgBox.innerHTML = msg;
             msgBox.className = type === 'error' 
                 ? "text-center text-sm font-semibold p-2 rounded bg-red-900/50 text-red-400 border border-red-500 mt-2" 
-                : "text-center text-sm font-semibold p-2 rounded bg-indigo-900/50 text-indigo-400 border border-indigo-500 mt-2";
+                : "text-center text-sm font-semibold p-2 rounded bg-green-900/50 text-green-400 border border-green-500 mt-2";
             msgBox.classList.remove('hidden');
         }
 
         function toggleAuthMode() {
             isLoginMode = !isLoginMode;
             document.getElementById('authTitle').innerText = isLoginMode ? 'Genratetag' : 'Create Account';
-            document.getElementById('authSubtitle').innerText = isLoginMode ? 'Please login to continue.' : 'Create a brand new account.';
+            document.getElementById('authSubtitle').innerText = isLoginMode ? 'Cloud Database Synchronized.' : 'Register new cloud account.';
             document.getElementById('authBtn').innerText = isLoginMode ? 'Login' : 'Register';
             document.getElementById('authSwitchText').innerHTML = isLoginMode 
                 ? 'Don\'t have an account? <span class="text-indigo-400 cursor-pointer hover:underline font-semibold" onclick="toggleAuthMode()">Register here</span>'
@@ -174,24 +206,34 @@
             showAuthMessage(""); 
         }
 
-        function handleAuth() {
-            const email = document.getElementById('emailInput').value.trim();
+        // Database Authentication (Firestore based)
+        async function handleAuth() {
+            const email = document.getElementById('emailInput').value.trim().toLowerCase();
             const password = document.getElementById('passwordInput').value.trim();
             if (!email || !password) return showAuthMessage("⚠️ Enter both email and password!", "error");
 
-            let users = JSON.parse(localStorage.getItem('genratetag_users') || '[]');
-            if (isLoginMode) {
-                if (users.find(u => u.email === email && u.password === password)) {
+            try {
+                const userRef = db.collection("users").doc(email);
+                const doc = await userRef.get();
+
+                if (isLoginMode) {
+                    if (!doc.exists) return showAuthMessage("❌ User not found! Please register first.", "error");
+                    if (doc.data().password !== password) return showAuthMessage("❌ Incorrect password!", "error");
+                    
                     showAuthMessage("✅ Logging in...", "success");
-                    localStorage.setItem('currentUser', email); 
+                    currentUserEmail = email;
+                    localStorage.setItem('currentUser', email); // Save user state
                     setTimeout(() => showMainApp(email), 500);
-                } else showAuthMessage("❌ Invalid credentials! Click 'Register here' first.", "error");
-            } else {
-                if(users.find(u => u.email === email)) return showAuthMessage("⚠️ Email already registered! Switch to Login.", "error");
-                users.push({ email, password });
-                localStorage.setItem('genratetag_users', JSON.stringify(users));
-                showAuthMessage("✅ Registered successfully! You can now login.", "success");
-                setTimeout(() => toggleAuthMode(), 1500);
+                } else {
+                    if (doc.exists) return showAuthMessage("⚠️ Email already registered! Switch to Login.", "error");
+                    
+                    await userRef.set({ email, password, createdAt: new Date().toISOString() });
+                    showAuthMessage("✅ Registered successfully! You can now login.", "success");
+                    setTimeout(() => toggleAuthMode(), 1500);
+                }
+            } catch (err) {
+                showAuthMessage("❌ Database error. Check your Firebase Test Mode.", "error");
+                console.error(err);
             }
         }
 
@@ -202,6 +244,8 @@
         }
 
         function logout() {
+            currentUserEmail = null;
+            // Only remove the current user, do not clear the whole local storage
             localStorage.removeItem('currentUser');
             document.getElementById('authSection').classList.add('hidden');
             document.getElementById('mainApp').classList.add('hidden');
@@ -227,41 +271,32 @@
                 const canvas = document.getElementById(elementId);
                 canvas.toBlob(blob => {
                     const item = new ClipboardItem({ "image/png": blob });
-                    navigator.clipboard.write([item]).then(() => {
-                        alert("Thumbnail copied to clipboard!");
-                    }).catch(err => {
-                        alert("Failed to copy image.");
-                    });
+                    navigator.clipboard.write([item]).then(() => alert("Thumbnail copied!"));
                 });
             } else {
                 const el = document.getElementById(elementId);
                 el.select();
-                el.setSelectionRange(0, 99999);
-                navigator.clipboard.writeText(el.value).then(() => {
-                    alert("Copied to clipboard!");
-                });
+                navigator.clipboard.writeText(el.value).then(() => alert("Copied to clipboard!"));
             }
         }
 
-        function saveToHistory(title, desc, tags, thumbnailData) {
-            const email = localStorage.getItem('currentUser');
-            if(!email) return;
+        // ================= FIRESTORE DATABASE HISTORY =================
+        async function saveToDatabase(title, desc, tags, thumbnailData) {
+            if (!currentUserEmail) return;
             try {
-                let history = JSON.parse(localStorage.getItem('genratetag_history_' + email) || '[]');
-                history.unshift({
-                    id: Date.now(),
-                    date: new Date().toLocaleString(),
+                await db.collection("users").doc(currentUserEmail).collection("history").add({
                     title: title,
                     desc: desc,
                     tags: tags,
-                    image: thumbnailData
+                    image: thumbnailData,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
                 });
-                if (history.length > 8) history = history.slice(0, 8);
-                localStorage.setItem('genratetag_history_' + email, JSON.stringify(history));
-            } catch(e) {}
+            } catch (e) {
+                console.warn("Cloud save failed:", e);
+            }
         }
 
-        function showHistory() {
+        async function showHistory() {
             document.getElementById("uploadSection").classList.add("hidden");
             document.getElementById("resultsSection").classList.add("hidden");
             document.getElementById("loadingIndicator").classList.add("hidden");
@@ -269,43 +304,49 @@
             const historySection = document.getElementById("historySection");
             const grid = document.getElementById("historyGrid");
             historySection.classList.remove("hidden");
-            
-            const email = localStorage.getItem('currentUser');
-            let history = JSON.parse(localStorage.getItem('genratetag_history_' + email) || '[]');
-            
-            if (history.length === 0) {
-                grid.innerHTML = `<div class="col-span-full text-center py-10 text-slate-400">No history found. Generate some metadata first!</div>`;
-                return;
-            }
+            grid.innerHTML = `<div class="col-span-full text-center py-10 text-slate-400">Loading from Cloud Database...</div>`;
 
-            grid.innerHTML = history.map((item, index) => `
-                <div class="glass-panel rounded-lg overflow-hidden border border-slate-700 hover:border-indigo-500 transition cursor-pointer group" onclick="loadHistoryItem(${index})">
-                    <img src="${item.image}" class="w-full h-40 object-cover opacity-80 group-hover:opacity-100 transition">
-                    <div class="p-4">
-                        <h4 class="font-bold text-white text-sm line-clamp-2 mb-1">${item.title}</h4>
-                        <p class="text-xs text-indigo-400"><i class="far fa-clock"></i> ${item.date}</p>
-                    </div>
-                </div>
-            `).join('');
+            try {
+                const snapshot = await db.collection("users").doc(currentUserEmail).collection("history").orderBy("timestamp", "desc").limit(9).get();
+                
+                if (snapshot.empty) {
+                    grid.innerHTML = `<div class="col-span-full text-center py-10 text-slate-400">No cloud history found.</div>`;
+                    return;
+                }
+
+                let html = "";
+                snapshot.forEach(docSnap => {
+                    const item = docSnap.data();
+                    const dateStr = item.timestamp ? item.timestamp.toDate().toLocaleString() : "Just now";
+                    html += `
+                        <div class="glass-panel rounded-lg overflow-hidden border border-slate-700 hover:border-indigo-500 transition cursor-pointer group" onclick='loadHistoryItem(${JSON.stringify(item.title).replace(/'/g, "&apos;")}, ${JSON.stringify(item.desc).replace(/'/g, "&apos;")}, ${JSON.stringify(item.tags).replace(/'/g, "&apos;")}, "${item.image}")'>
+                            <img src="${item.image}" class="w-full h-40 object-cover opacity-80 group-hover:opacity-100 transition">
+                            <div class="p-4">
+                                <h4 class="font-bold text-white text-sm line-clamp-2 mb-1">${item.title}</h4>
+                                <p class="text-xs text-indigo-400"><i class="far fa-clock"></i> ${dateStr}</p>
+                            </div>
+                        </div>
+                    `;
+                });
+                grid.innerHTML = html;
+            } catch (e) {
+                grid.innerHTML = `<div class="col-span-full text-center py-10 text-red-400">Failed to load history from Firestore database. Check rules.</div>`;
+                console.error(e);
+            }
         }
 
-        function loadHistoryItem(index) {
-            const email = localStorage.getItem('currentUser');
-            let history = JSON.parse(localStorage.getItem('genratetag_history_' + email) || '[]');
-            const item = history[index];
-            if(!item) return;
-
+        function loadHistoryItem(title, desc, tags, image) {
             document.getElementById("historySection").classList.add("hidden");
             document.getElementById("resultsSection").classList.remove("hidden");
             
-            document.getElementById("resTitle").value = item.title;
-            document.getElementById("resDesc").value = item.desc;
-            document.getElementById("resTags").value = item.tags;
+            document.getElementById("resTitle").value = title;
+            document.getElementById("resDesc").value = desc;
+            document.getElementById("resTags").value = tags;
 
             document.getElementById("previewVideo").classList.add("hidden");
             const histPreview = document.getElementById("historyPreviewImg");
             histPreview.classList.remove("hidden");
-            histPreview.src = item.image;
+            histPreview.src = image;
 
             const canvas = document.getElementById("thumbnailCanvas");
             const ctx = canvas.getContext("2d");
@@ -314,14 +355,21 @@
                 canvas.width = 1280; canvas.height = 720;
                 ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
             };
-            img.src = item.image;
+            img.src = image;
         }
 
-        function clearHistory() {
-            if(confirm("Are you sure you want to delete all history?")) {
-                const email = localStorage.getItem('currentUser');
-                localStorage.removeItem('genratetag_history_' + email);
-                showHistory();
+        async function clearHistory() {
+            if(confirm("Delete all cloud history permanently?")) {
+                try {
+                    const ref = db.collection("users").doc(currentUserEmail).collection("history");
+                    const snapshot = await ref.get();
+                    const batch = db.batch();
+                    snapshot.docs.forEach((doc) => batch.delete(doc.ref));
+                    await batch.commit();
+                    showHistory();
+                } catch (e) {
+                    alert("Failed to clear history.");
+                }
             }
         }
 
@@ -331,9 +379,9 @@
             const file = event.target.files[0];
             if (!file) return;
             
-            const apiKey = getAPIKey();
-            if (apiKey === "YAHAN_APNI_API_KEY_DAALO" || !apiKey) {
-                return alert("Developer Setup Note: Please put your Gemini API Key in code line 204 first!");
+            const apiKey = localStorage.getItem("gemini_api_key");
+            if (!apiKey) {
+                return alert("🔒 SECURITY: Double-click the 'Genratetag' logo at top-left to enter your Gemini API key first!");
             }
 
             document.getElementById("uploadSection").classList.add("hidden");
@@ -389,7 +437,7 @@
                 if (data.error) {
                     if (data.error.message.includes("quota") || data.error.message.includes("rate limit")) {
                         if (retryCount < 3) {
-                            document.getElementById("loadingText").innerText = `Google rate limit reached. Waiting 10s... (${retryCount + 1}/3)`;
+                            document.getElementById("loadingText").innerText = `Rate limit reached. Waiting 10s... (${retryCount + 1}/3)`;
                             await new Promise(resolve => setTimeout(resolve, 10500));
                             return await callGeminiAPI(prompt, base64Image, apiKey, retryCount + 1);
                         }
@@ -412,11 +460,11 @@
 
                 setTimeout(() => {
                     const thumbData = document.getElementById("thumbnailCanvas").toDataURL("image/jpeg", 0.6);
-                    saveToHistory(resultJSON.title, resultJSON.description, resultJSON.tags, thumbData);
+                    saveToDatabase(resultJSON.title, resultJSON.description, resultJSON.tags, thumbData);
                 }, 500);
 
             } catch (error) {
-                alert("Network error. Check your internet connection."); resetUI();
+                alert("Network error. Check connection."); resetUI();
             }
         }
 
@@ -490,7 +538,7 @@
             User instruction for changes: "${userInst}"
             Return STRICTLY in JSON format: {"title": "...", "description": "...", "tags": "...", "thumbText": "..."}`;
             
-            const apiKey = getAPIKey();
+            const apiKey = localStorage.getItem("gemini_api_key");
             const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
             const requestBody = JSON.stringify({ contents: [{ parts: [ { text: prompt }, { inline_data: { mime_type: "image/jpeg", data: currentImageBase64 } } ] }] });
 
@@ -518,7 +566,7 @@
 
                 setTimeout(() => {
                     const thumbData = document.getElementById("thumbnailCanvas").toDataURL("image/jpeg", 0.6);
-                    saveToHistory(resultJSON.title, resultJSON.description, resultJSON.tags, thumbData);
+                    saveToDatabase(resultJSON.title, resultJSON.description, resultJSON.tags, thumbData);
                 }, 500);
 
             } catch (error) {
