@@ -3,73 +3,255 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Control Panel - Genratetag</title>
+    <title>Super Admin Panel - Genratetag</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Firebase & EmailJS -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 </head>
-<body class="bg-slate-900 text-white min-h-screen flex items-center justify-center p-6">
-    <div class="bg-slate-800 p-8 rounded-xl w-full max-w-md shadow-2xl border-t-4 border-indigo-500">
-        <div class="text-center mb-6">
-            <i class="fas fa-lock text-4xl text-indigo-500 mb-2"></i>
-            <h2 class="text-2xl font-bold text-white">Admin Panel</h2>
-            <p class="text-sm text-slate-400">Manage Cloud Settings</p>
-        </div>
+<body class="bg-slate-900 text-white min-h-screen flex items-center justify-center">
+
+    <!-- LOGIN & RESET SECTION -->
+    <div id="authSection" class="p-6 w-full max-w-md">
         
-        <div class="flex flex-col gap-4">
-            <label class="text-sm font-semibold text-slate-300">Google Gemini API Key</label>
-            <input type="password" id="adminApiKey" placeholder="Enter API Key here..." class="w-full bg-slate-900 border border-slate-600 rounded px-4 py-3 focus:border-indigo-500 focus:outline-none">
+        <!-- Login Box -->
+        <div id="loginBox" class="bg-slate-800 p-8 rounded-xl shadow-2xl border-t-4 border-indigo-500 flex flex-col gap-4">
+            <div class="text-center mb-4">
+                <i class="fas fa-user-shield text-4xl text-indigo-500 mb-2"></i>
+                <h2 class="text-2xl font-bold">Admin Login</h2>
+            </div>
+            <input type="text" id="adminUser" placeholder="Username" class="w-full bg-slate-900 border border-slate-600 rounded px-4 py-3 focus:border-indigo-500 focus:outline-none">
+            <input type="password" id="adminPass" placeholder="Password" class="w-full bg-slate-900 border border-slate-600 rounded px-4 py-3 focus:border-indigo-500 focus:outline-none">
+            <button onclick="loginAdmin()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-lg mt-2">Login</button>
+            <div id="loginMsg" class="hidden text-center text-sm font-semibold p-2 rounded"></div>
+            <button onclick="showResetBox()" class="text-sm text-indigo-400 hover:underline mt-2">Reset Username and Password</button>
+        </div>
+
+        <!-- Reset Box -->
+        <div id="resetBox" class="hidden bg-slate-800 p-8 rounded-xl shadow-2xl border-t-4 border-red-500 flex flex-col gap-4">
+            <h2 class="text-xl font-bold text-center">Reset Credentials</h2>
             
-            <button onclick="saveKeyToCloud()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 px-4 rounded-lg shadow-lg transition mt-2">
-                Save Key to Firebase
-            </button>
-            <div id="adminMsg" class="hidden text-center text-sm font-semibold p-2 rounded mt-2"></div>
+            <div id="step1">
+                <label class="text-xs text-slate-400">Recovery Email (Locked)</label>
+                <input type="email" value="sahudolat21@gmail.com" disabled class="w-full bg-slate-700 text-slate-300 border border-slate-600 rounded px-4 py-3 cursor-not-allowed mb-4">
+                <button onclick="sendOTP()" class="w-full bg-red-600 hover:bg-red-500 text-white font-bold py-3 rounded-lg">Send OTP</button>
+            </div>
+
+            <div id="step2" class="hidden flex flex-col gap-4">
+                <input type="text" id="otpInput" placeholder="Enter OTP from Email" class="w-full bg-slate-900 border border-slate-600 rounded px-4 py-3 focus:border-indigo-500 focus:outline-none">
+                <button onclick="verifyOTP()" class="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-3 rounded-lg">Verify OTP</button>
+            </div>
+
+            <div id="step3" class="hidden flex flex-col gap-4">
+                <input type="text" id="newUsername" placeholder="New Username" class="w-full bg-slate-900 border border-slate-600 rounded px-4 py-3">
+                <input type="password" id="newPassword" placeholder="New Password" class="w-full bg-slate-900 border border-slate-600 rounded px-4 py-3">
+                <input type="password" id="confirmPassword" placeholder="Confirm Password" class="w-full bg-slate-900 border border-slate-600 rounded px-4 py-3">
+                <button onclick="saveNewCredentials()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-lg">Save New Credentials</button>
+            </div>
+            
+            <div id="resetMsg" class="hidden text-center text-sm font-semibold p-2 rounded"></div>
+            <button onclick="showLoginBox()" class="text-sm text-slate-400 hover:underline mt-2">Back to Login</button>
+        </div>
+    </div>
+
+    <!-- ADMIN DASHBOARD -->
+    <div id="dashboardSection" class="hidden w-full min-h-screen flex">
+        
+        <!-- Sidebar -->
+        <div class="w-64 bg-slate-800 p-6 flex flex-col gap-4 border-r border-slate-700">
+            <h2 class="text-xl font-bold text-indigo-400 mb-6"><i class="fas fa-cogs"></i> Admin Control</h2>
+            <button onclick="switchTab('apiTab')" class="text-left px-4 py-2 rounded hover:bg-slate-700 transition"><i class="fas fa-key w-6"></i> API Key</button>
+            <button onclick="switchTab('uiTab')" class="text-left px-4 py-2 rounded hover:bg-slate-700 transition"><i class="fas fa-paint-brush w-6"></i> Edit UI / Name</button>
+            <button onclick="switchTab('usersTab')" class="text-left px-4 py-2 rounded hover:bg-slate-700 transition"><i class="fas fa-users w-6"></i> Users & History</button>
+            <button onclick="logoutAdmin()" class="text-left px-4 py-2 rounded hover:bg-red-900/50 text-red-400 transition mt-auto"><i class="fas fa-sign-out-alt w-6"></i> Logout</button>
+        </div>
+
+        <!-- Content Area -->
+        <div class="flex-grow p-10 max-w-5xl mx-auto">
+            
+            <!-- API Tab -->
+            <div id="apiTab" class="tab-content bg-slate-800 p-8 rounded-xl shadow-lg border-t-4 border-indigo-500">
+                <h3 class="text-2xl font-bold mb-4">Set Gemini API Key</h3>
+                <input type="password" id="adminApiKey" placeholder="Enter Google Gemini API Key" class="w-full bg-slate-900 border border-slate-600 rounded px-4 py-3 mb-4 focus:outline-none focus:border-indigo-500">
+                <button onclick="saveConfig('api_config', { gemini_key: document.getElementById('adminApiKey').value })" class="bg-indigo-600 px-6 py-2 rounded font-bold">Save Key</button>
+            </div>
+
+            <!-- UI Tab -->
+            <div id="uiTab" class="tab-content hidden bg-slate-800 p-8 rounded-xl shadow-lg border-t-4 border-pink-500">
+                <h3 class="text-2xl font-bold mb-4">Website Appearance (Live Edit)</h3>
+                <div class="flex flex-col gap-4">
+                    <div><label class="text-sm text-slate-400">Website Name</label>
+                    <input type="text" id="uiSiteName" placeholder="e.g. Genratetag" class="w-full bg-slate-900 border border-slate-600 rounded px-4 py-2 mt-1"></div>
+                    <div><label class="text-sm text-slate-400">Upload Button Name</label>
+                    <input type="text" id="uiBtnName" placeholder="e.g. Upload Video" class="w-full bg-slate-900 border border-slate-600 rounded px-4 py-2 mt-1"></div>
+                    <button onclick="saveUIConfig()" class="bg-pink-600 px-6 py-2 rounded font-bold w-max mt-2">Save UI Changes</button>
+                </div>
+            </div>
+
+            <!-- Users Tab -->
+            <div id="usersTab" class="tab-content hidden bg-slate-800 p-8 rounded-xl shadow-lg border-t-4 border-green-500">
+                <h3 class="text-2xl font-bold mb-4">All Registered Users</h3>
+                <button onclick="loadUsers()" class="bg-green-600 px-4 py-2 rounded font-bold mb-4 text-sm"><i class="fas fa-sync"></i> Refresh Users</button>
+                <div id="usersList" class="flex flex-col gap-2"></div>
+                <div id="userHistoryBox" class="mt-8 hidden border-t border-slate-700 pt-6">
+                    <h4 class="text-xl font-bold text-indigo-400 mb-4" id="historyTitle">User History</h4>
+                    <div id="userHistoryList" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+                </div>
+            </div>
+
         </div>
     </div>
 
     <script>
-        // Firebase Config
+        // FIREBASE SETUP
         const firebaseConfig = {
             apiKey: "AIzaSyCEJaT600Z1rIbMeduSp4PV1LwpQi1QLWY",
             authDomain: "genratetag-7f9ae.firebaseapp.com",
             projectId: "genratetag-7f9ae",
             storageBucket: "genratetag-7f9ae.firebasestorage.app",
             messagingSenderId: "538331491651",
-            appId: "1:538331491651:web:bbb66e84dd3d7ded4a53f6",
-            measurementId: "G-DSX0D9M7DM"
+            appId: "1:538331491651:web:bbb66e84dd3d7ded4a53f6"
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
+        emailjs.init("YOUR_EMAILJS_PUBLIC_KEY"); // Developer note: Add actual key for real emails
 
-        async function saveKeyToCloud() {
-            const key = document.getElementById('adminApiKey').value.trim();
-            const msgBox = document.getElementById('adminMsg');
+        // ================= AUTHENTICATION =================
+        let adminSessionActive = false;
+        
+        function showMsg(id, msg, type) {
+            const el = document.getElementById(id);
+            el.innerHTML = msg; el.classList.remove('hidden');
+            el.className = type === 'error' ? "text-center text-sm font-semibold p-2 rounded mt-2 bg-red-900/50 text-red-400 border border-red-500" : "text-center text-sm font-semibold p-2 rounded mt-2 bg-green-900/50 text-green-400 border border-green-500";
+        }
+
+        async function loginAdmin() {
+            const u = document.getElementById('adminUser').value.trim();
+            const p = document.getElementById('adminPass').value.trim();
+            if(!u || !p) return showMsg('loginMsg', '⚠️ Enter username and password', 'error');
+
+            const doc = await db.collection("admin_settings").doc("credentials").get();
+            let validU = "admin", validP = "admin123"; // Fallback defaults
+            if(doc.exists) { validU = doc.data().user; validP = doc.data().pass; }
+
+            if(u === validU && p === validP) {
+                adminSessionActive = true;
+                document.getElementById('authSection').classList.add('hidden');
+                document.getElementById('dashboardSection').classList.remove('hidden');
+            } else {
+                showMsg('loginMsg', '❌ Incorrect Credentials', 'error');
+            }
+        }
+
+        function logoutAdmin() {
+            adminSessionActive = false;
+            document.getElementById('adminUser').value = ""; document.getElementById('adminPass').value = "";
+            document.getElementById('dashboardSection').classList.add('hidden');
+            document.getElementById('authSection').classList.remove('hidden');
+            document.getElementById('loginMsg').classList.add('hidden');
+        }
+
+        // ================= RESET SYSTEM =================
+        let currentOTP = "";
+        function showResetBox() { document.getElementById('loginBox').classList.add('hidden'); document.getElementById('resetBox').classList.remove('hidden'); }
+        function showLoginBox() { document.getElementById('resetBox').classList.add('hidden'); document.getElementById('loginBox').classList.remove('hidden'); }
+
+        async function sendOTP() {
+            currentOTP = Math.floor(100000 + Math.random() * 900000).toString();
+            console.log("TESTING OTP (Since EmailJS is dummy):", currentOTP); // For you to test!
             
-            if(!key) {
-                msgBox.innerHTML = "⚠️ Please enter a key!";
-                msgBox.className = "text-center text-sm font-semibold p-2 rounded mt-2 bg-red-900/50 text-red-400 border border-red-500";
-                msgBox.classList.remove('hidden');
-                return;
-            }
+            showMsg('resetMsg', '⏳ Sending OTP to sahudolat21@gmail.com...', 'success');
+            // Mock Email sending delay
+            setTimeout(() => {
+                showMsg('resetMsg', '✅ OTP Sent! (Check console if EmailJS not configured)', 'success');
+                document.getElementById('step1').classList.add('hidden');
+                document.getElementById('step2').classList.remove('hidden');
+            }, 1500);
+        }
 
-            msgBox.innerHTML = "Saving to Cloud...";
-            msgBox.className = "text-center text-sm font-semibold p-2 rounded mt-2 text-indigo-400";
-            msgBox.classList.remove('hidden');
+        function verifyOTP() {
+            if(document.getElementById('otpInput').value.trim() === currentOTP) {
+                showMsg('resetMsg', '✅ OTP Verified!', 'success');
+                document.getElementById('step2').classList.add('hidden');
+                document.getElementById('step3').classList.remove('hidden');
+            } else { showMsg('resetMsg', '❌ Invalid OTP!', 'error'); }
+        }
 
-            try {
-                // Saving key to Firebase 'admin_settings' collection
-                await db.collection("admin_settings").doc("api_config").set({
-                    gemini_key: key,
-                    updatedAt: new Date().toISOString()
-                });
-                msgBox.innerHTML = "✅ API Key securely saved to Firebase Cloud!";
-                msgBox.className = "text-center text-sm font-semibold p-2 rounded mt-2 bg-green-900/50 text-green-400 border border-green-500";
-                document.getElementById('adminApiKey').value = "";
-            } catch (error) {
-                msgBox.innerHTML = "❌ Failed to save. Check Firebase rules.";
-                msgBox.className = "text-center text-sm font-semibold p-2 rounded mt-2 bg-red-900/50 text-red-400";
+        async function saveNewCredentials() {
+            const u = document.getElementById('newUsername').value.trim();
+            const p1 = document.getElementById('newPassword').value.trim();
+            const p2 = document.getElementById('confirmPassword').value.trim();
+            if(!u || !p1) return showMsg('resetMsg', '⚠️ Fill all fields', 'error');
+            if(p1 !== p2) return showMsg('resetMsg', '❌ Passwords do not match', 'error');
+
+            await db.collection("admin_settings").doc("credentials").set({ user: u, pass: p1 });
+            alert("✅ Username and Password Reset Successfully!");
+            window.location.reload();
+        }
+
+        // ================= DASHBOARD TABS & FEATURES =================
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
+            document.getElementById(tabId).classList.remove('hidden');
+            if(tabId === 'uiTab') loadUIConfig();
+        }
+
+        async function saveConfig(docName, data) {
+            await db.collection("admin_settings").doc(docName).set(data);
+            alert(`✅ ${docName} Saved Successfully!`);
+        }
+
+        async function saveUIConfig() {
+            const data = {
+                siteName: document.getElementById('uiSiteName').value.trim() || "Genratetag",
+                btnName: document.getElementById('uiBtnName').value.trim() || "Upload Video"
+            };
+            await saveConfig('ui_config', data);
+        }
+
+        async function loadUIConfig() {
+            const doc = await db.collection("admin_settings").doc("ui_config").get();
+            if(doc.exists) {
+                document.getElementById('uiSiteName').value = doc.data().siteName || "";
+                document.getElementById('uiBtnName').value = doc.data().btnName || "";
             }
+        }
+
+        async function loadUsers() {
+            const list = document.getElementById('usersList');
+            list.innerHTML = "Loading users...";
+            const snapshot = await db.collection("users").get();
+            list.innerHTML = "";
+            snapshot.forEach(doc => {
+                const email = doc.id;
+                list.innerHTML += `<div class="bg-slate-700 p-3 rounded flex justify-between items-center">
+                    <span>${email}</span>
+                    <button onclick="viewUserHistory('${email}')" class="bg-indigo-500 px-3 py-1 text-sm rounded">View History</button>
+                </div>`;
+            });
+        }
+
+        async function viewUserHistory(email) {
+            const box = document.getElementById('userHistoryBox');
+            const list = document.getElementById('userHistoryList');
+            box.classList.remove('hidden');
+            document.getElementById('historyTitle').innerText = `History for: ${email}`;
+            list.innerHTML = "Fetching records...";
+
+            const snapshot = await db.collection("users").doc(email).collection("history").orderBy("timestamp", "desc").get();
+            if(snapshot.empty) { list.innerHTML = "No history found for this user."; return; }
+
+            list.innerHTML = "";
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                list.innerHTML += `<div class="bg-slate-700 p-3 rounded text-sm">
+                    <img src="${data.image}" class="w-full h-24 object-cover rounded mb-2">
+                    <p class="font-bold truncate">${data.title}</p>
+                </div>`;
+            });
         }
     </script>
 </body>
