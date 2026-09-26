@@ -46,16 +46,9 @@
                 <span class="text-white">Genratetag</span>
             </div>
             <div class="flex items-center gap-2 flex-wrap">
-                <button onclick="showHome()" class="bg-slate-700 hover:bg-slate-600 text-white px-3 py-1.5 rounded text-sm transition font-semibold" title="Home"><i class="fas fa-home"></i> <span class="hidden md:inline">Home</span></button>
-                <button onclick="showHistory()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded text-sm transition font-semibold" title="History"><i class="fas fa-history"></i> <span class="hidden md:inline">History</span></button>
-                
-                <select id="modelSelect" class="bg-slate-800 text-sm px-3 py-1.5 rounded border border-slate-600 focus:outline-none focus:border-indigo-500 text-indigo-300 font-semibold w-40 md:w-48">
-                    <option value="gemini-3.8-flash">gemini-3.8-flash</option>
-                </select>
-
-                <input type="password" id="apiKeyInput" placeholder="API Key..." class="bg-slate-800 text-sm px-3 py-1.5 rounded border border-slate-600 focus:outline-none focus:border-indigo-500 w-28 md:w-36">
-                <button onclick="saveApiKey()" class="bg-green-600 text-white px-3 py-1.5 rounded text-sm transition font-semibold" title="Save API Key"><i class="fas fa-save"></i></button>
-                <button onclick="logout()" class="bg-red-600 text-white px-3 py-1.5 rounded text-sm transition" title="Logout"><i class="fas fa-sign-out-alt"></i></button>
+                <button onclick="showHome()" class="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded text-sm transition font-semibold" title="Home"><i class="fas fa-home"></i> <span class="hidden md:inline ml-1">Home</span></button>
+                <button onclick="showHistory()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded text-sm transition font-semibold" title="History"><i class="fas fa-history"></i> <span class="hidden md:inline ml-1">History</span></button>
+                <button onclick="logout()" class="bg-red-600 text-white px-4 py-2 rounded text-sm transition" title="Logout"><i class="fas fa-sign-out-alt"></i></button>
             </div>
         </header>
 
@@ -74,17 +67,17 @@
             <section id="uploadSection" class="glass-panel p-10 rounded-xl text-center border-dashed border-2 border-slate-600 hover:border-indigo-500 transition cursor-pointer flex flex-col items-center justify-center min-h-[300px]">
                 <input type="file" id="videoInput" accept="video/*" class="hidden" onchange="handleVideoUpload(event)">
                 <i class="fas fa-cloud-upload-alt text-5xl text-indigo-400 mb-4"></i>
-                <h2 class="text-2xl font-bold mb-2">Upload Video to Generate Tags, Title & Thumbnail</h2>
-                <p class="text-slate-400 mb-4 text-sm">Select any MP4, WebM or MKV file. Auto-recovers if rate limit is reached.</p>
-                <button onclick="document.getElementById('videoInput').click()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-3 rounded-lg font-bold shadow-lg transition mt-4">Select Video File</button>
+                <h2 class="text-2xl font-bold mb-2">Upload Video to Generate Metadata</h2>
+                <p class="text-slate-400 mb-4 text-sm">Select any MP4, WebM or MKV file. AI will do the rest automatically.</p>
+                <button onclick="document.getElementById('videoInput').click()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-8 py-3 rounded-lg font-bold shadow-lg transition mt-4">Select Video File</button>
             </section>
 
             <video id="hiddenVideo" class="hidden" preload="metadata" crossorigin="anonymous"></video>
             <canvas id="hiddenCanvas" class="hidden"></canvas>
 
             <div id="loadingIndicator" class="hidden text-center py-10 flex flex-col items-center">
-                <i class="fas fa-circle-notch fa-spin text-4xl text-indigo-500 mb-3"></i>
-                <p class="text-lg text-slate-300 font-semibold" id="loadingText">Processing...</p>
+                <i class="fas fa-brain fa-spin text-4xl text-indigo-500 mb-3"></i>
+                <p class="text-lg text-slate-300 font-semibold" id="loadingText">AI is thinking...</p>
             </div>
 
             <div id="resultsSection" class="hidden flex flex-col md:flex-row gap-6">
@@ -132,9 +125,8 @@
                     
                     <div class="glass-panel p-6 rounded-xl flex flex-col" id="refineBox">
                         <h3 class="font-bold mb-2 text-slate-300"><i class="fas fa-magic text-yellow-400 mr-2"></i>Refine / Change Results</h3>
-                        <p class="text-xs text-slate-400 mb-3">Tell AI what to change (e.g. "Change thumbnail text", "Make title shorter", "Add tech tags")</p>
                         <div class="flex gap-2">
-                            <input type="text" id="chatInput" placeholder="Type your changes here..." class="flex-grow bg-slate-800 border border-slate-600 rounded-l px-4 py-2 focus:border-indigo-500 focus:outline-none" onkeypress="if(event.key === 'Enter') refineMetadata()">
+                            <input type="text" id="chatInput" placeholder="Make the title more clickbait..." class="flex-grow bg-slate-800 border border-slate-600 rounded-l px-4 py-2 focus:border-indigo-500 focus:outline-none" onkeypress="if(event.key === 'Enter') refineMetadata()">
                             <button onclick="refineMetadata()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-2 rounded-r font-bold">Update</button>
                         </div>
                     </div>
@@ -144,13 +136,16 @@
     </div>
 
     <script>
+        // ==========================================
+        // YAHAN APNI GOOGLE GEMINI API KEY DAALO:
+        // ==========================================
+        const MY_GEMINI_API_KEY = "YAHAN_APNI_API_KEY_DAALO"; 
+        
         let isLoginMode = true;
 
         document.addEventListener("DOMContentLoaded", () => {
             const currentUser = localStorage.getItem("currentUser");
             if (currentUser) showMainApp(currentUser);
-            const savedKey = localStorage.getItem("gemini_api_key");
-            if (savedKey) document.getElementById("apiKeyInput").value = savedKey;
         });
 
         function showAuthMessage(msg, type) {
@@ -325,28 +320,21 @@
             }
         }
 
-        function saveApiKey() {
-            const key = document.getElementById("apiKeyInput").value;
-            if(!key) { alert("Enter API key!"); return; }
-            localStorage.setItem("gemini_api_key", key);
-            alert("API Key saved successfully!");
-        }
-
         let currentImageBase64 = "";
 
         async function handleVideoUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
             
-            const apiKey = localStorage.getItem("gemini_api_key") || document.getElementById("apiKeyInput").value;
-            if (!apiKey) return alert("Please put your Gemini API Key in the box at the top right.");
+            if (MY_GEMINI_API_KEY === "AQ.Ab8RN6Ja0_8RSXGyj_o1mP6zp4fxIh7ttL2xYQvAljpU7YH-Gg" || !MY_GEMINI_API_KEY) {
+                return alert("Setup Error: Please add your API key in the code (line 218) first!");
+            }
 
             document.getElementById("uploadSection").classList.add("hidden");
             document.getElementById("historySection").classList.add("hidden");
             document.getElementById("resultsSection").classList.add("hidden");
             document.getElementById("loadingIndicator").classList.remove("hidden");
 
-            const selectedModel = document.getElementById("modelSelect").value;
             document.getElementById("loadingText").innerText = "Extracting HD Frame...";
 
             const videoURL = URL.createObjectURL(file);
@@ -378,31 +366,31 @@
                     4. A short punchy catchy text phrase (max 4-5 words) that should be displayed bold on the YouTube thumbnail.
                     Return STRICTLY in JSON format: {"title": "...", "description": "...", "tags": "...", "thumbText": "..."}`;
                     
-                    await callGeminiAPI(prompt, currentImageBase64, selectedModel, apiKey, 0);
+                    // Fixed to always use gemini-3.8-flash directly
+                    await callGeminiAPI(prompt, currentImageBase64, "gemini-3.8-flash", 0);
                 }, 600);
             };
         }
 
-        async function callGeminiAPI(prompt, base64Image, modelName, apiKey, retryCount) {
-            document.getElementById("loadingText").innerText = `Analyzing with ${modelName}...`;
+        async function callGeminiAPI(prompt, base64Image, modelName, retryCount) {
+            document.getElementById("loadingText").innerText = `AI is thinking...`;
             
-            const url = `https://generativelanguage.googleapis.com/v1/models/${modelName}:generateContent?key=${apiKey}`;
+            const url = `https://generativelanguage.googleapis.com/v1/models/${modelName}:generateContent?key=${MY_GEMINI_API_KEY}`;
             const requestBody = JSON.stringify({ contents: [{ parts: [ { text: prompt }, { inline_data: { mime_type: "image/jpeg", data: base64Image } } ] }] });
 
             try {
                 let response = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: requestBody });
                 let data = await response.json();
                 
-                // AUTO-RETRY IF QUOTA EXCEEDED
                 if (data.error) {
                     if (data.error.message.includes("quota") || data.error.message.includes("rate limit")) {
                         if (retryCount < 3) {
-                            document.getElementById("loadingText").innerText = `Rate limit reached. Auto-retrying in 10 seconds... (${retryCount + 1}/3)`;
+                            document.getElementById("loadingText").innerText = `Google is busy. Waiting 10s... (${retryCount + 1}/3)`;
                             await new Promise(resolve => setTimeout(resolve, 10500));
-                            return await callGeminiAPI(prompt, base64Image, modelName, apiKey, retryCount + 1);
+                            return await callGeminiAPI(prompt, base64Image, modelName, retryCount + 1);
                         }
                     }
-                    alert("API Error: " + data.error.message);
+                    alert("AI Error: " + data.error.message);
                     resetUI(); return;
                 }
 
@@ -424,7 +412,7 @@
                 }, 500);
 
             } catch (error) {
-                alert("Network error or invalid response. Try again."); resetUI();
+                alert("Network error. Check your internet connection."); resetUI();
             }
         }
 
@@ -483,10 +471,55 @@
             const userInst = document.getElementById("chatInput").value;
             if (!userInst) return;
             
-            document.getElementById("loadingIndicator").classList.add("hidden");
-            document.getElementById("resultsSection").classList.remove("hidden");
-            document.getElementById("chatInput").value = "";
-            alert("Please re-upload or select from history to apply new changes cleanly.");
+            document.getElementById("loadingIndicator").classList.remove("hidden");
+            document.getElementById("resultsSection").classList.add("hidden");
+            document.getElementById("loadingText").innerText = "Updating metadata & thumbnail...";
+            
+            const currentTitle = document.getElementById("resTitle").value;
+            const currentDesc = document.getElementById("resDesc").value;
+            const currentTags = document.getElementById("resTags").value;
+
+            const prompt = `You are a professional YouTube SEO expert and thumbnail designer. 
+            Current Title: "${currentTitle}"
+            Current Description: "${currentDesc}"
+            Current Tags: "${currentTags}"
+            User instruction for changes: "${userInst}"
+            Return STRICTLY in JSON format: {"title": "...", "description": "...", "tags": "...", "thumbText": "..."}`;
+            
+            // Fixed to always use gemini-3.8-flash for refinements too
+            const url = `https://generativelanguage.googleapis.com/v1/models/gemini-3.8-flash:generateContent?key=${MY_GEMINI_API_KEY}`;
+            const requestBody = JSON.stringify({ contents: [{ parts: [ { text: prompt }, { inline_data: { mime_type: "image/jpeg", data: currentImageBase64 } } ] }] });
+
+            try {
+                let response = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: requestBody });
+                let data = await response.json();
+                
+                if (data.error) {
+                    alert("AI Error: " + data.error.message);
+                    resetUI(); return;
+                }
+
+                let textResponse = data.candidates[0].content.parts[0].text.replace(/```json/g, '').replace(/```/g, '').trim();
+                const resultJSON = JSON.parse(textResponse);
+
+                document.getElementById("resTitle").value = resultJSON.title || currentTitle;
+                document.getElementById("resDesc").value = resultJSON.description || currentDesc;
+                document.getElementById("resTags").value = resultJSON.tags || currentTags;
+                
+                createThumbnail(resultJSON.thumbText || resultJSON.title || currentTitle);
+
+                document.getElementById("loadingIndicator").classList.add("hidden");
+                document.getElementById("resultsSection").classList.remove("hidden");
+                document.getElementById("chatInput").value = "";
+
+                setTimeout(() => {
+                    const thumbData = document.getElementById("thumbnailCanvas").toDataURL("image/jpeg", 0.6);
+                    saveToHistory(resultJSON.title, resultJSON.description, resultJSON.tags, thumbData);
+                }, 500);
+
+            } catch (error) {
+                alert("Failed to update. Try again."); resetUI();
+            }
         }
     </script>
 </body>
