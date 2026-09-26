@@ -117,7 +117,9 @@
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
-        emailjs.init("YOUR_EMAILJS_PUBLIC_KEY"); // Developer note: Add actual key for real emails
+        
+        // EMAILJS INITIALIZATION
+        emailjs.init("47ZmWHW23CU4ZVxjT");
 
         // ================= AUTHENTICATION =================
         let adminSessionActive = false;
@@ -134,7 +136,7 @@
             if(!u || !p) return showMsg('loginMsg', '⚠️ Enter username and password', 'error');
 
             const doc = await db.collection("admin_settings").doc("credentials").get();
-            let validU = "admin", validP = "admin123"; // Fallback defaults
+            let validU = "admin", validP = "admin123"; 
             if(doc.exists) { validU = doc.data().user; validP = doc.data().pass; }
 
             if(u === validU && p === validP) {
@@ -161,15 +163,19 @@
 
         async function sendOTP() {
             currentOTP = Math.floor(100000 + Math.random() * 900000).toString();
-            console.log("TESTING OTP (Since EmailJS is dummy):", currentOTP); // For you to test!
-            
             showMsg('resetMsg', '⏳ Sending OTP to sahudolat21@gmail.com...', 'success');
-            // Mock Email sending delay
-            setTimeout(() => {
-                showMsg('resetMsg', '✅ OTP Sent! (Check console if EmailJS not configured)', 'success');
+            
+            try {
+                await emailjs.send("service_yxq2tnn", "template_d3xpedm", {
+                    otp: currentOTP
+                });
+                showMsg('resetMsg', '✅ OTP Sent! Check your email inbox.', 'success');
                 document.getElementById('step1').classList.add('hidden');
                 document.getElementById('step2').classList.remove('hidden');
-            }, 1500);
+            } catch (error) {
+                console.error("EmailJS Error: ", error);
+                showMsg('resetMsg', '❌ Failed to send OTP. Please check EmailJS settings.', 'error');
+            }
         }
 
         function verifyOTP() {
@@ -201,7 +207,7 @@
 
         async function saveConfig(docName, data) {
             await db.collection("admin_settings").doc(docName).set(data);
-            alert(`✅ ${docName} Saved Successfully!`);
+            alert(`✅ Settings Saved Successfully!`);
         }
 
         async function saveUIConfig() {
