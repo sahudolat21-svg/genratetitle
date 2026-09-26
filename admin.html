@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Control Panel - Genratetag</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+</head>
+<body class="bg-slate-900 text-white min-h-screen flex items-center justify-center p-6">
+    <div class="bg-slate-800 p-8 rounded-xl w-full max-w-md shadow-2xl border-t-4 border-indigo-500">
+        <div class="text-center mb-6">
+            <i class="fas fa-lock text-4xl text-indigo-500 mb-2"></i>
+            <h2 class="text-2xl font-bold text-white">Admin Panel</h2>
+            <p class="text-sm text-slate-400">Manage Cloud Settings</p>
+        </div>
+        
+        <div class="flex flex-col gap-4">
+            <label class="text-sm font-semibold text-slate-300">Google Gemini API Key</label>
+            <input type="password" id="adminApiKey" placeholder="Enter API Key here..." class="w-full bg-slate-900 border border-slate-600 rounded px-4 py-3 focus:border-indigo-500 focus:outline-none">
+            
+            <button onclick="saveKeyToCloud()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 px-4 rounded-lg shadow-lg transition mt-2">
+                Save Key to Firebase
+            </button>
+            <div id="adminMsg" class="hidden text-center text-sm font-semibold p-2 rounded mt-2"></div>
+        </div>
+    </div>
+
+    <script>
+        // Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyCEJaT600Z1rIbMeduSp4PV1LwpQi1QLWY",
+            authDomain: "genratetag-7f9ae.firebaseapp.com",
+            projectId: "genratetag-7f9ae",
+            storageBucket: "genratetag-7f9ae.firebasestorage.app",
+            messagingSenderId: "538331491651",
+            appId: "1:538331491651:web:bbb66e84dd3d7ded4a53f6",
+            measurementId: "G-DSX0D9M7DM"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        async function saveKeyToCloud() {
+            const key = document.getElementById('adminApiKey').value.trim();
+            const msgBox = document.getElementById('adminMsg');
+            
+            if(!key) {
+                msgBox.innerHTML = "⚠️ Please enter a key!";
+                msgBox.className = "text-center text-sm font-semibold p-2 rounded mt-2 bg-red-900/50 text-red-400 border border-red-500";
+                msgBox.classList.remove('hidden');
+                return;
+            }
+
+            msgBox.innerHTML = "Saving to Cloud...";
+            msgBox.className = "text-center text-sm font-semibold p-2 rounded mt-2 text-indigo-400";
+            msgBox.classList.remove('hidden');
+
+            try {
+                // Saving key to Firebase 'admin_settings' collection
+                await db.collection("admin_settings").doc("api_config").set({
+                    gemini_key: key,
+                    updatedAt: new Date().toISOString()
+                });
+                msgBox.innerHTML = "✅ API Key securely saved to Firebase Cloud!";
+                msgBox.className = "text-center text-sm font-semibold p-2 rounded mt-2 bg-green-900/50 text-green-400 border border-green-500";
+                document.getElementById('adminApiKey').value = "";
+            } catch (error) {
+                msgBox.innerHTML = "❌ Failed to save. Check Firebase rules.";
+                msgBox.className = "text-center text-sm font-semibold p-2 rounded mt-2 bg-red-900/50 text-red-400";
+            }
+        }
+    </script>
+</body>
+</html>
