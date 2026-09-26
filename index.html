@@ -6,11 +6,8 @@
     <title>Genratetag - AI Video Metadata & Thumbnail Generator</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    
-    <!-- Firebase SDK Compat Scripts for Database -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         body { font-family: 'Inter', sans-serif; background-color: #0f1115; color: #e2e8f0; }
@@ -22,7 +19,6 @@
 </head>
 <body class="min-h-screen">
 
-    <!-- AUTHENTICATION SECTION -->
     <div id="authSection" class="min-h-screen flex items-center justify-center p-6">
         <div class="glass-panel p-8 rounded-xl w-full max-w-md shadow-2xl flex flex-col gap-5 border-t-4 border-t-indigo-500">
             <div class="text-center mb-2">
@@ -30,7 +26,6 @@
                 <h2 id="authTitle" class="text-2xl font-bold text-white">Genratetag</h2>
                 <p id="authSubtitle" class="text-sm text-slate-400 mt-1">Cloud Database Synchronized.</p>
             </div>
-            
             <div class="flex flex-col gap-4">
                 <input type="email" id="emailInput" placeholder="Email Address" class="w-full bg-slate-800 border border-slate-600 rounded px-4 py-3 focus:outline-none focus:border-indigo-500 transition">
                 <input type="password" id="passwordInput" placeholder="Password" class="w-full bg-slate-800 border border-slate-600 rounded px-4 py-3 focus:outline-none focus:border-indigo-500 transition" onkeypress="if(event.key === 'Enter') handleAuth()">
@@ -43,11 +38,9 @@
         </div>
     </div>
 
-    <!-- MAIN APP SECTION -->
     <div id="mainApp" class="hidden min-h-screen flex flex-col">
         <header class="glass-panel sticky top-0 z-50 px-6 py-4 flex justify-between items-center shadow-lg border-b-2 border-b-indigo-500 flex-wrap gap-4">
-            <!-- SECRET ADMIN LOCK: Double click logo to enter API Key securely -->
-            <div class="flex items-center gap-2 text-xl font-bold text-indigo-500 cursor-pointer" title="Double click to set API Key" ondblclick="setupAdminKey()">
+            <div class="flex items-center gap-2 text-xl font-bold text-indigo-500">
                 <i class="fas fa-tags"></i>
                 <span class="text-white">Genratetag</span>
             </div>
@@ -59,22 +52,19 @@
         </header>
 
         <main class="flex-grow p-6 max-w-6xl mx-auto w-full flex flex-col gap-6">
-            
-            <!-- HISTORY SECTION -->
             <section id="historySection" class="hidden glass-panel p-6 rounded-xl flex flex-col gap-4">
                 <div class="flex justify-between items-center border-b border-slate-700 pb-2">
-                    <h2 class="text-2xl font-bold text-white"><i class="fas fa-history text-indigo-400 mr-2"></i>Cloud Database History</h2>
-                    <button onclick="clearHistory()" class="text-sm bg-red-600 hover:bg-red-500 px-3 py-1 rounded text-white transition"><i class="fas fa-trash"></i> Clear Cloud History</button>
+                    <h2 class="text-2xl font-bold text-white"><i class="fas fa-history text-indigo-400 mr-2"></i>Cloud History</h2>
+                    <button onclick="clearHistory()" class="text-sm bg-red-600 hover:bg-red-500 px-3 py-1 rounded text-white transition"><i class="fas fa-trash"></i> Clear</button>
                 </div>
                 <div id="historyGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-4"></div>
             </section>
 
-            <!-- UPLOAD SECTION -->
             <section id="uploadSection" class="glass-panel p-10 rounded-xl text-center border-dashed border-2 border-slate-600 hover:border-indigo-500 transition cursor-pointer flex flex-col items-center justify-center min-h-[300px]">
                 <input type="file" id="videoInput" accept="video/*" class="hidden" onchange="handleVideoUpload(event)">
                 <i class="fas fa-cloud-upload-alt text-5xl text-indigo-400 mb-4"></i>
                 <h2 class="text-2xl font-bold mb-2">Upload Video to Generate Metadata</h2>
-                <p class="text-slate-400 mb-4 text-sm">Select any MP4, WebM or MKV file. History syncs automatically with Firestore Database.</p>
+                <p class="text-slate-400 mb-4 text-sm">Select any MP4, WebM or MKV file. Fast processing powered by Cloud.</p>
                 <button onclick="document.getElementById('videoInput').click()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-8 py-3 rounded-lg font-bold shadow-lg transition mt-4">Select Video File</button>
             </section>
 
@@ -89,51 +79,30 @@
             <div id="resultsSection" class="hidden flex flex-col md:flex-row gap-6">
                 <div class="w-full md:w-1/3 flex flex-col gap-6">
                     <div class="glass-panel p-4 rounded-xl" id="previewContainer">
-                        <h3 class="text-sm font-semibold text-slate-400 mb-2 uppercase">Video Source</h3>
                         <video id="previewVideo" controls class="w-full rounded-lg bg-black hidden"></video>
                         <img id="historyPreviewImg" class="w-full rounded-lg bg-black hidden" />
                     </div>
                     <div class="glass-panel p-4 rounded-xl flex flex-col items-center">
                         <div class="flex justify-between items-center w-full mb-2">
                             <h3 class="text-sm font-semibold text-slate-400 uppercase">Thumbnail</h3>
-                            <button onclick="copyElementText('thumbnailCanvas', true)" class="text-xs bg-slate-700 hover:bg-slate-600 text-indigo-300 px-2.5 py-1 rounded transition"><i class="fas fa-copy"></i> Copy</button>
                         </div>
                         <canvas id="thumbnailCanvas" class="w-full rounded-lg mb-4 bg-black"></canvas>
-                        <button onclick="downloadThumbnail()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded font-bold"><i class="fas fa-download"></i> Download Thumbnail</button>
+                        <button onclick="downloadThumbnail()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded font-bold w-full"><i class="fas fa-download"></i> Download Thumbnail</button>
                     </div>
                 </div>
                 <div class="w-full md:w-2/3 flex flex-col gap-6">
                     <div class="glass-panel p-6 rounded-xl flex flex-col gap-4">
                         <div>
-                            <div class="flex justify-between items-center mb-1">
-                                <label class="text-sm font-semibold text-slate-400">YouTube Title</label>
-                                <button onclick="copyElementText('resTitle', false)" class="text-xs bg-slate-700 hover:bg-slate-600 text-indigo-300 px-2.5 py-1 rounded transition"><i class="fas fa-copy"></i> Copy Title</button>
-                            </div>
+                            <label class="text-sm font-semibold text-slate-400">YouTube Title</label>
                             <input type="text" id="resTitle" class="w-full bg-slate-800 border rounded px-3 py-2 font-bold text-lg border-slate-600 focus:border-indigo-500 focus:outline-none">
                         </div>
-                        
                         <div>
-                            <div class="flex justify-between items-center mb-1">
-                                <label class="text-sm font-semibold text-slate-400">Description</label>
-                                <button onclick="copyElementText('resDesc', false)" class="text-xs bg-slate-700 hover:bg-slate-600 text-indigo-300 px-2.5 py-1 rounded transition"><i class="fas fa-copy"></i> Copy Description</button>
-                            </div>
+                            <label class="text-sm font-semibold text-slate-400">Description</label>
                             <textarea id="resDesc" rows="6" class="w-full bg-slate-800 border rounded px-3 py-2 border-slate-600 focus:border-indigo-500 focus:outline-none"></textarea>
                         </div>
-                        
                         <div>
-                            <div class="flex justify-between items-center mb-1">
-                                <label class="text-sm font-semibold text-slate-400">Tags</label>
-                                <button onclick="copyElementText('resTags', false)" class="text-xs bg-slate-700 hover:bg-slate-600 text-indigo-300 px-2.5 py-1 rounded transition"><i class="fas fa-copy"></i> Copy Tags</button>
-                            </div>
+                            <label class="text-sm font-semibold text-slate-400">Tags</label>
                             <textarea id="resTags" rows="2" class="w-full bg-slate-800 border rounded px-3 py-2 text-sm text-indigo-400 border-slate-600 focus:border-indigo-500 focus:outline-none"></textarea>
-                        </div>
-                    </div>
-                    
-                    <div class="glass-panel p-6 rounded-xl flex flex-col" id="refineBox">
-                        <h3 class="font-bold mb-2 text-slate-300"><i class="fas fa-magic text-yellow-400 mr-2"></i>Refine / Change Results</h3>
-                        <div class="flex gap-2">
-                            <input type="text" id="chatInput" placeholder="Make title more catchy..." class="flex-grow bg-slate-800 border border-slate-600 rounded-l px-4 py-2 focus:border-indigo-500 focus:outline-none" onkeypress="if(event.key === 'Enter') refineMetadata()">
-                            <button onclick="refineMetadata()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-2 rounded-r font-bold">Update</button>
                         </div>
                     </div>
                 </div>
@@ -142,9 +111,6 @@
     </div>
 
     <script>
-        // ========================================================
-        // 🔥 FIREBASE DATABASE CONFIGURATION (User provided)
-        // ========================================================
         const firebaseConfig = {
             apiKey: "AIzaSyCEJaT600Z1rIbMeduSp4PV1LwpQi1QLWY",
             authDomain: "genratetag-7f9ae.firebaseapp.com",
@@ -154,15 +120,13 @@
             appId: "1:538331491651:web:bbb66e84dd3d7ded4a53f6",
             measurementId: "G-DSX0D9M7DM"
         };
-
-        // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
         let isLoginMode = true;
         let currentUserEmail = null;
+        let cloudApiKey = ""; // This will hold the key fetched from Firebase
 
-        // Auto-login if user is already in LocalStorage (No login needed on refresh)
         document.addEventListener("DOMContentLoaded", () => {
             const savedUser = localStorage.getItem("currentUser");
             if (savedUser) {
@@ -170,20 +134,6 @@
                 showMainApp(savedUser);
             }
         });
-
-        // Secret Admin Panel to safely store Gemini API Key without exposing it
-        function setupAdminKey() {
-            const currentKey = localStorage.getItem("gemini_api_key") || "";
-            const key = prompt("🔒 SECRET ADMIN PANEL 🔒\nEnter your Gemini API Key:", currentKey);
-            if (key !== null) {
-                if (key.trim() === "") {
-                    localStorage.removeItem("gemini_api_key");
-                } else {
-                    localStorage.setItem("gemini_api_key", key.trim());
-                    alert("✅ API Key Saved Securely!");
-                }
-            }
-        }
 
         function showAuthMessage(msg, type) {
             const msgBox = document.getElementById('authMessage');
@@ -198,7 +148,6 @@
         function toggleAuthMode() {
             isLoginMode = !isLoginMode;
             document.getElementById('authTitle').innerText = isLoginMode ? 'Genratetag' : 'Create Account';
-            document.getElementById('authSubtitle').innerText = isLoginMode ? 'Cloud Database Synchronized.' : 'Register new cloud account.';
             document.getElementById('authBtn').innerText = isLoginMode ? 'Login' : 'Register';
             document.getElementById('authSwitchText').innerHTML = isLoginMode 
                 ? 'Don\'t have an account? <span class="text-indigo-400 cursor-pointer hover:underline font-semibold" onclick="toggleAuthMode()">Register here</span>'
@@ -206,7 +155,6 @@
             showAuthMessage(""); 
         }
 
-        // Database Authentication (Firestore based)
         async function handleAuth() {
             const email = document.getElementById('emailInput').value.trim().toLowerCase();
             const password = document.getElementById('passwordInput').value.trim();
@@ -220,20 +168,17 @@
                     if (!doc.exists) return showAuthMessage("❌ User not found! Please register first.", "error");
                     if (doc.data().password !== password) return showAuthMessage("❌ Incorrect password!", "error");
                     
-                    showAuthMessage("✅ Logging in...", "success");
                     currentUserEmail = email;
-                    localStorage.setItem('currentUser', email); // Save user state
-                    setTimeout(() => showMainApp(email), 500);
+                    localStorage.setItem('currentUser', email); 
+                    showMainApp(email);
                 } else {
                     if (doc.exists) return showAuthMessage("⚠️ Email already registered! Switch to Login.", "error");
-                    
                     await userRef.set({ email, password, createdAt: new Date().toISOString() });
                     showAuthMessage("✅ Registered successfully! You can now login.", "success");
                     setTimeout(() => toggleAuthMode(), 1500);
                 }
             } catch (err) {
-                showAuthMessage("❌ Database error. Check your Firebase Test Mode.", "error");
-                console.error(err);
+                showAuthMessage("❌ Database error. Check connection.", "error");
             }
         }
 
@@ -245,13 +190,9 @@
 
         function logout() {
             currentUserEmail = null;
-            // Only remove the current user, do not clear the whole local storage
             localStorage.removeItem('currentUser');
             document.getElementById('authSection').classList.add('hidden');
             document.getElementById('mainApp').classList.add('hidden');
-            document.getElementById('emailInput').value = "";
-            document.getElementById('passwordInput').value = "";
-            showAuthMessage("");
         }
 
         function showHome() {
@@ -261,116 +202,12 @@
             document.getElementById("uploadSection").classList.remove("hidden");
         }
 
-        function resetUI() {
-            document.getElementById("loadingIndicator").classList.add("hidden");
-            document.getElementById("uploadSection").classList.remove("hidden");
-        }
-
-        function copyElementText(elementId, isCanvas) {
-            if (isCanvas) {
-                const canvas = document.getElementById(elementId);
-                canvas.toBlob(blob => {
-                    const item = new ClipboardItem({ "image/png": blob });
-                    navigator.clipboard.write([item]).then(() => alert("Thumbnail copied!"));
-                });
-            } else {
-                const el = document.getElementById(elementId);
-                el.select();
-                navigator.clipboard.writeText(el.value).then(() => alert("Copied to clipboard!"));
-            }
-        }
-
-        // ================= FIRESTORE DATABASE HISTORY =================
-        async function saveToDatabase(title, desc, tags, thumbnailData) {
-            if (!currentUserEmail) return;
+        async function getCloudApiKey() {
             try {
-                await db.collection("users").doc(currentUserEmail).collection("history").add({
-                    title: title,
-                    desc: desc,
-                    tags: tags,
-                    image: thumbnailData,
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                });
-            } catch (e) {
-                console.warn("Cloud save failed:", e);
-            }
-        }
-
-        async function showHistory() {
-            document.getElementById("uploadSection").classList.add("hidden");
-            document.getElementById("resultsSection").classList.add("hidden");
-            document.getElementById("loadingIndicator").classList.add("hidden");
-            
-            const historySection = document.getElementById("historySection");
-            const grid = document.getElementById("historyGrid");
-            historySection.classList.remove("hidden");
-            grid.innerHTML = `<div class="col-span-full text-center py-10 text-slate-400">Loading from Cloud Database...</div>`;
-
-            try {
-                const snapshot = await db.collection("users").doc(currentUserEmail).collection("history").orderBy("timestamp", "desc").limit(9).get();
-                
-                if (snapshot.empty) {
-                    grid.innerHTML = `<div class="col-span-full text-center py-10 text-slate-400">No cloud history found.</div>`;
-                    return;
-                }
-
-                let html = "";
-                snapshot.forEach(docSnap => {
-                    const item = docSnap.data();
-                    const dateStr = item.timestamp ? item.timestamp.toDate().toLocaleString() : "Just now";
-                    html += `
-                        <div class="glass-panel rounded-lg overflow-hidden border border-slate-700 hover:border-indigo-500 transition cursor-pointer group" onclick='loadHistoryItem(${JSON.stringify(item.title).replace(/'/g, "&apos;")}, ${JSON.stringify(item.desc).replace(/'/g, "&apos;")}, ${JSON.stringify(item.tags).replace(/'/g, "&apos;")}, "${item.image}")'>
-                            <img src="${item.image}" class="w-full h-40 object-cover opacity-80 group-hover:opacity-100 transition">
-                            <div class="p-4">
-                                <h4 class="font-bold text-white text-sm line-clamp-2 mb-1">${item.title}</h4>
-                                <p class="text-xs text-indigo-400"><i class="far fa-clock"></i> ${dateStr}</p>
-                            </div>
-                        </div>
-                    `;
-                });
-                grid.innerHTML = html;
-            } catch (e) {
-                grid.innerHTML = `<div class="col-span-full text-center py-10 text-red-400">Failed to load history from Firestore database. Check rules.</div>`;
-                console.error(e);
-            }
-        }
-
-        function loadHistoryItem(title, desc, tags, image) {
-            document.getElementById("historySection").classList.add("hidden");
-            document.getElementById("resultsSection").classList.remove("hidden");
-            
-            document.getElementById("resTitle").value = title;
-            document.getElementById("resDesc").value = desc;
-            document.getElementById("resTags").value = tags;
-
-            document.getElementById("previewVideo").classList.add("hidden");
-            const histPreview = document.getElementById("historyPreviewImg");
-            histPreview.classList.remove("hidden");
-            histPreview.src = image;
-
-            const canvas = document.getElementById("thumbnailCanvas");
-            const ctx = canvas.getContext("2d");
-            const img = new Image();
-            img.onload = () => {
-                canvas.width = 1280; canvas.height = 720;
-                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-            };
-            img.src = image;
-        }
-
-        async function clearHistory() {
-            if(confirm("Delete all cloud history permanently?")) {
-                try {
-                    const ref = db.collection("users").doc(currentUserEmail).collection("history");
-                    const snapshot = await ref.get();
-                    const batch = db.batch();
-                    snapshot.docs.forEach((doc) => batch.delete(doc.ref));
-                    await batch.commit();
-                    showHistory();
-                } catch (e) {
-                    alert("Failed to clear history.");
-                }
-            }
+                const doc = await db.collection("admin_settings").doc("api_config").get();
+                if(doc.exists) return doc.data().gemini_key;
+            } catch(e) { console.error("Could not fetch API key from cloud"); }
+            return null;
         }
 
         let currentImageBase64 = "";
@@ -378,18 +215,20 @@
         async function handleVideoUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
-            
-            const apiKey = localStorage.getItem("gemini_api_key");
-            if (!apiKey) {
-                return alert("🔒 SECURITY: Double-click the 'Genratetag' logo at top-left to enter your Gemini API key first!");
-            }
 
             document.getElementById("uploadSection").classList.add("hidden");
-            document.getElementById("historySection").classList.add("hidden");
-            document.getElementById("resultsSection").classList.add("hidden");
             document.getElementById("loadingIndicator").classList.remove("hidden");
-            document.getElementById("loadingText").innerText = "Extracting HD Frame...";
+            document.getElementById("loadingText").innerText = "Connecting to Cloud API...";
 
+            // Fetch API Key from Firebase automatically (No prompt for user!)
+            cloudApiKey = await getCloudApiKey();
+            if (!cloudApiKey) {
+                document.getElementById("loadingIndicator").classList.add("hidden");
+                document.getElementById("uploadSection").classList.remove("hidden");
+                return alert("System is currently configuring. Admin has not set the API key yet. Please try again later.");
+            }
+
+            document.getElementById("loadingText").innerText = "Extracting HD Frame...";
             const videoURL = URL.createObjectURL(file);
             const previewVideo = document.getElementById("previewVideo");
             document.getElementById("historyPreviewImg").classList.add("hidden");
@@ -412,21 +251,15 @@
                     ctx.drawImage(previewVideo, 0, 0, canvas.width, canvas.height);
                     currentImageBase64 = canvas.toDataURL("image/jpeg", 0.9).split(",")[1]; 
                     
-                    const prompt = `You are a professional YouTube SEO expert and thumbnail designer. Analyze this video frame. Generate:
-                    1. A highly catchy YouTube Title.
-                    2. A detailed SEO optimized description.
-                    3. Comma-separated tags.
-                    4. A short punchy catchy text phrase (max 4-5 words) that should be displayed bold on the YouTube thumbnail.
-                    Return STRICTLY in JSON format: {"title": "...", "description": "...", "tags": "...", "thumbText": "..."}`;
+                    const prompt = `Generate a catchy YouTube Title, SEO description, tags, and a short 4-word thumbText in strict JSON format: {"title": "...", "description": "...", "tags": "...", "thumbText": "..."}`;
                     
-                    await callGeminiAPI(prompt, currentImageBase64, apiKey, 0);
+                    await callGeminiAPI(prompt, currentImageBase64, cloudApiKey, 0);
                 }, 600);
             };
         }
 
         async function callGeminiAPI(prompt, base64Image, apiKey, retryCount) {
             document.getElementById("loadingText").innerText = `AI is analyzing video...`;
-            
             const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
             const requestBody = JSON.stringify({ contents: [{ parts: [ { text: prompt }, { inline_data: { mime_type: "image/jpeg", data: base64Image } } ] }] });
 
@@ -435,15 +268,8 @@
                 let data = await response.json();
                 
                 if (data.error) {
-                    if (data.error.message.includes("quota") || data.error.message.includes("rate limit")) {
-                        if (retryCount < 3) {
-                            document.getElementById("loadingText").innerText = `Rate limit reached. Waiting 10s... (${retryCount + 1}/3)`;
-                            await new Promise(resolve => setTimeout(resolve, 10500));
-                            return await callGeminiAPI(prompt, base64Image, apiKey, retryCount + 1);
-                        }
-                    }
                     alert("AI Error: " + data.error.message);
-                    resetUI(); return;
+                    showHome(); return;
                 }
 
                 let textResponse = data.candidates[0].content.parts[0].text.replace(/```json/g, '').replace(/```/g, '').trim();
@@ -452,7 +278,6 @@
                 document.getElementById("resTitle").value = resultJSON.title || "";
                 document.getElementById("resDesc").value = resultJSON.description || "";
                 document.getElementById("resTags").value = resultJSON.tags || "";
-                
                 createThumbnail(resultJSON.thumbText || resultJSON.title || "Awesome Video");
 
                 document.getElementById("loadingIndicator").classList.add("hidden");
@@ -464,8 +289,61 @@
                 }, 500);
 
             } catch (error) {
-                alert("Network error. Check connection."); resetUI();
+                alert("Network error. Check connection."); showHome();
             }
+        }
+
+        async function saveToDatabase(title, desc, tags, thumbnailData) {
+            if (!currentUserEmail) return;
+            try {
+                await db.collection("users").doc(currentUserEmail).collection("history").add({
+                    title: title, desc: desc, tags: tags, image: thumbnailData,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            } catch (e) { console.warn("Cloud save failed:", e); }
+        }
+
+        async function showHistory() {
+            document.getElementById("uploadSection").classList.add("hidden");
+            document.getElementById("resultsSection").classList.add("hidden");
+            const grid = document.getElementById("historyGrid");
+            document.getElementById("historySection").classList.remove("hidden");
+            grid.innerHTML = `<div class="col-span-full text-center py-10 text-slate-400">Loading Cloud Data...</div>`;
+
+            try {
+                const snapshot = await db.collection("users").doc(currentUserEmail).collection("history").orderBy("timestamp", "desc").limit(9).get();
+                if (snapshot.empty) { grid.innerHTML = `<div class="col-span-full text-center py-10 text-slate-400">No cloud history found.</div>`; return; }
+
+                let html = "";
+                snapshot.forEach(docSnap => {
+                    const item = docSnap.data();
+                    html += `
+                        <div class="glass-panel rounded-lg overflow-hidden border border-slate-700 hover:border-indigo-500 transition cursor-pointer group" onclick='loadHistoryItem(${JSON.stringify(item.title).replace(/'/g, "&apos;")}, ${JSON.stringify(item.desc).replace(/'/g, "&apos;")}, ${JSON.stringify(item.tags).replace(/'/g, "&apos;")}, "${item.image}")'>
+                            <img src="${item.image}" class="w-full h-40 object-cover opacity-80 group-hover:opacity-100 transition">
+                            <div class="p-4"><h4 class="font-bold text-white text-sm line-clamp-2">${item.title}</h4></div>
+                        </div>`;
+                });
+                grid.innerHTML = html;
+            } catch (e) { grid.innerHTML = `<div class="col-span-full text-center text-red-400">Failed to load history.</div>`; }
+        }
+
+        function loadHistoryItem(title, desc, tags, image) {
+            document.getElementById("historySection").classList.add("hidden");
+            document.getElementById("resultsSection").classList.remove("hidden");
+            document.getElementById("resTitle").value = title;
+            document.getElementById("resDesc").value = desc;
+            document.getElementById("resTags").value = tags;
+            
+            document.getElementById("previewVideo").classList.add("hidden");
+            const histPreview = document.getElementById("historyPreviewImg");
+            histPreview.classList.remove("hidden");
+            histPreview.src = image;
+
+            const canvas = document.getElementById("thumbnailCanvas");
+            const ctx = canvas.getContext("2d");
+            const img = new Image();
+            img.onload = () => { canvas.width = 1280; canvas.height = 720; ctx.drawImage(img, 0, 0, canvas.width, canvas.height); };
+            img.src = image;
         }
 
         function createThumbnail(mainText) {
@@ -473,42 +351,24 @@
             const hiddenCanvas = document.getElementById("hiddenCanvas");
             canvas.width = 1280; canvas.height = 720;
             const ctx = canvas.getContext("2d");
-            
             ctx.drawImage(hiddenCanvas, 0, 0, canvas.width, canvas.height);
-            
             const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-            gradient.addColorStop(0, "rgba(0,0,0,0.3)");
-            gradient.addColorStop(0.6, "transparent");
-            gradient.addColorStop(1, "rgba(0,0,0,0.85)");
-            ctx.fillStyle = gradient; 
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            ctx.textAlign = "center";
-            ctx.font = "900 65px 'Inter', sans-serif";
+            gradient.addColorStop(0, "rgba(0,0,0,0.3)"); gradient.addColorStop(1, "rgba(0,0,0,0.85)");
+            ctx.fillStyle = gradient; ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.textAlign = "center"; ctx.font = "900 65px 'Inter', sans-serif";
             
-            const words = mainText.toUpperCase().split(' ');
-            let line = '';
-            let lines = [];
+            const words = mainText.toUpperCase().split(' '); let line = ''; let lines = [];
             for(let i = 0; i < words.length; i++) {
                 let testLine = line + words[i] + ' ';
-                if(ctx.measureText(testLine).width > canvas.width - 200 && i > 0) {
-                    lines.push(line);
-                    line = words[i] + ' ';
-                } else {
-                    line = testLine;
-                }
+                if(ctx.measureText(testLine).width > canvas.width - 200 && i > 0) { lines.push(line); line = words[i] + ' '; } 
+                else { line = testLine; }
             }
             lines.push(line);
-
             let startY = canvas.height - (lines.length * 80) - 40;
-
             lines.forEach((l, idx) => {
                 let textY = startY + (idx * 80);
-                ctx.lineWidth = 12;
-                ctx.strokeStyle = "black";
-                ctx.fillStyle = idx === 1 ? "#38bdf8" : "white";
-                ctx.strokeText(l.trim(), canvas.width/2, textY);
-                ctx.fillText(l.trim(), canvas.width/2, textY);
+                ctx.lineWidth = 12; ctx.strokeStyle = "black"; ctx.fillStyle = idx === 1 ? "#38bdf8" : "white";
+                ctx.strokeText(l.trim(), canvas.width/2, textY); ctx.fillText(l.trim(), canvas.width/2, textY);
             });
         }
 
@@ -517,61 +377,6 @@
             link.download = "youtube-thumbnail.jpg";
             link.href = document.getElementById("thumbnailCanvas").toDataURL("image/jpeg", 0.95);
             link.click();
-        }
-
-        async function refineMetadata() {
-            const userInst = document.getElementById("chatInput").value;
-            if (!userInst) return;
-            
-            document.getElementById("loadingIndicator").classList.remove("hidden");
-            document.getElementById("resultsSection").classList.add("hidden");
-            document.getElementById("loadingText").innerText = "Updating metadata & thumbnail...";
-            
-            const currentTitle = document.getElementById("resTitle").value;
-            const currentDesc = document.getElementById("resDesc").value;
-            const currentTags = document.getElementById("resTags").value;
-
-            const prompt = `You are a professional YouTube SEO expert and thumbnail designer. 
-            Current Title: "${currentTitle}"
-            Current Description: "${currentDesc}"
-            Current Tags: "${currentTags}"
-            User instruction for changes: "${userInst}"
-            Return STRICTLY in JSON format: {"title": "...", "description": "...", "tags": "...", "thumbText": "..."}`;
-            
-            const apiKey = localStorage.getItem("gemini_api_key");
-            const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
-            const requestBody = JSON.stringify({ contents: [{ parts: [ { text: prompt }, { inline_data: { mime_type: "image/jpeg", data: currentImageBase64 } } ] }] });
-
-            try {
-                let response = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: requestBody });
-                let data = await response.json();
-                
-                if (data.error) {
-                    alert("AI Error: " + data.error.message);
-                    resetUI(); return;
-                }
-
-                let textResponse = data.candidates[0].content.parts[0].text.replace(/```json/g, '').replace(/```/g, '').trim();
-                const resultJSON = JSON.parse(textResponse);
-
-                document.getElementById("resTitle").value = resultJSON.title || currentTitle;
-                document.getElementById("resDesc").value = resultJSON.description || currentDesc;
-                document.getElementById("resTags").value = resultJSON.tags || currentTags;
-                
-                createThumbnail(resultJSON.thumbText || resultJSON.title || currentTitle);
-
-                document.getElementById("loadingIndicator").classList.add("hidden");
-                document.getElementById("resultsSection").classList.remove("hidden");
-                document.getElementById("chatInput").value = "";
-
-                setTimeout(() => {
-                    const thumbData = document.getElementById("thumbnailCanvas").toDataURL("image/jpeg", 0.6);
-                    saveToDatabase(resultJSON.title, resultJSON.description, resultJSON.tags, thumbData);
-                }, 500);
-
-            } catch (error) {
-                alert("Failed to update. Try again."); resetUI();
-            }
         }
     </script>
 </body>
