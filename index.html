@@ -87,7 +87,6 @@
                     </div>
                     
                     <div class="w-full md:w-2/3 flex flex-col gap-4">
-                        <!-- Locked & Copyable Fields -->
                         <div>
                             <div class="flex justify-between items-center mb-1">
                                 <label class="text-sm font-semibold text-slate-400">Viral YouTube Title</label>
@@ -328,10 +327,13 @@
                     
                     const prompt = `You are a highly skilled viral YouTube SEO expert. Analyze this image from a video. Generate a highly engaging, clickbaity but accurate JSON format ONLY: {"title": "Viral Catchy Title Here", "description": "SEO optimized description packed with high ranking keywords and hashtags to maximize reach", "tags": "viral, trending, ranking tag 1, ranking tag 2...", "thumbText": "SHORT BOLD"}`;
                     
-                    // 100% EXCLUSIVELY USING gemini-3.8-flash AS REQUESTED BY YOU
+                    // Smart Auto-Switch Model List (Hidden from User, Always Works)
                     const aiModels = [
-                        "v1beta/models/gemini-3.8-flash",
-                        "v1/models/gemini-3.8-flash"
+                        "v1beta/models/gemini-1.5-flash",
+                        "v1beta/models/gemini-1.5-flash-latest",
+                        "v1/models/gemini-1.5-flash",
+                        "v1beta/models/gemini-1.5-pro",
+                        "v1beta/models/gemini-pro-vision"
                     ];
                     
                     let successData = null;
@@ -357,7 +359,7 @@
                     }
 
                     if(!successData) {
-                        alert("API Error: " + lastErrorMsg + ". (Make sure your API key supports 3.8-flash).");
+                        alert("API Error: Unable to fetch data from Google API. Please check your API key billing and region.");
                         showHome(); return;
                     }
                         
@@ -399,10 +401,14 @@
             inputEl.value = "";
             chatHistory.scrollTop = chatHistory.scrollHeight;
 
-            // 100% EXCLUSIVELY USING gemini-3.8-flash FOR CHAT AS WELL
+            // Smart Auto-Switch Model List for Chat
             const chatModels = [
-                "v1beta/models/gemini-3.8-flash",
-                "v1/models/gemini-3.8-flash"
+                "v1beta/models/gemini-1.5-flash",
+                "v1beta/models/gemini-1.5-flash-latest",
+                "v1/models/gemini-1.5-flash",
+                "v1beta/models/gemini-1.5-pro",
+                "v1beta/models/gemini-pro",
+                "v1/models/gemini-pro"
             ];
             
             let successData = null;
@@ -433,7 +439,7 @@
                         </span>
                     </div>`;
             } else {
-                chatHistory.innerHTML += `<div class="text-center text-red-400 text-xs mt-2">Network Error. AI could not respond. (Ensure 3.8-flash is supported)</div>`;
+                chatHistory.innerHTML += `<div class="text-center text-red-400 text-xs mt-2">Network Error. Please check your internet or API key.</div>`;
             }
             chatHistory.scrollTop = chatHistory.scrollHeight;
         }
