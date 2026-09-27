@@ -391,7 +391,23 @@
         async function sendChatMessage() {
             const inputEl = document.getElementById("chatInput");
             const msg = inputEl.value.trim();
-            if(!msg || !globalApiKey) return;
+            if(!msg) return; // FIXED THIS LINE
+
+            // FIXED: Automatically fetch API key if missing (like when opened from History)
+            if (!globalApiKey) {
+                try {
+                    const adminDoc = await db.collection("admin_settings").doc("api_config").get();
+                    if(adminDoc.exists && adminDoc.data().gemini_key) {
+                        globalApiKey = adminDoc.data().gemini_key;
+                    } else {
+                        alert("Error: Admin API Key is missing. Please contact Admin.");
+                        return;
+                    }
+                } catch(e) {
+                    alert("Database Error: Could not load API Key.");
+                    return;
+                }
+            }
 
             const chatHistory = document.getElementById("chatHistory");
             
