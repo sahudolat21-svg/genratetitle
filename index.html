@@ -87,6 +87,7 @@
                     </div>
                     
                     <div class="w-full md:w-2/3 flex flex-col gap-4">
+                        <!-- Locked & Copyable Fields -->
                         <div>
                             <div class="flex justify-between items-center mb-1">
                                 <label class="text-sm font-semibold text-slate-400">Viral YouTube Title</label>
@@ -319,6 +320,7 @@
                 
                 hiddenVid.onloadedmetadata = () => { hiddenVid.currentTime = Math.min(2, hiddenVid.duration * 0.2); };
                 hiddenVid.onseeked = async () => {
+                    document.getElementById("loadingText").innerText = "Connecting AI Engines... Please wait.";
                     const canvas = document.getElementById("hiddenCanvas");
                     canvas.width = 1280; canvas.height = 720;
                     canvas.getContext("2d").drawImage(hiddenVid, 0, 0, 1280, 720);
@@ -326,40 +328,58 @@
                     
                     const prompt = `You are a highly skilled viral YouTube SEO expert. Analyze this image from a video. Generate a highly engaging, clickbaity but accurate JSON format ONLY: {"title": "Viral Catchy Title Here", "description": "SEO optimized description packed with high ranking keywords and hashtags to maximize reach", "tags": "viral, trending, ranking tag 1, ranking tag 2...", "thumbText": "SHORT BOLD"}`;
                     
-                    // FIXED: Using standard v1 API for Video Upload
-                    const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${globalApiKey}`;
+                    // AUTO-FALLBACK AI SYSTEM (This guarantees NO error screen for user)
+                    const aiModels = [
+                        "v1beta/models/gemini-1.5-flash",
+                        "v1beta/models/gemini-1.5-pro",
+                        "v1/models/gemini-1.5-flash",
+                        "v1beta/models/gemini-pro-vision"
+                    ];
                     
-                    try {
-                        const res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: "image/jpeg", data: b64 } }] }] }) });
-                        const data = await res.json();
-                        
-                        if(data.error) {
-                            alert("AI Error: " + data.error.message);
-                            showHome(); return;
-                        }
-                        
-                        let textRes = data.candidates[0].content.parts[0].text.replace(/```json|```/g, '').trim();
-                        let json = JSON.parse(textRes);
-                        
-                        document.getElementById("resTitle").value = json.title || "";
-                        document.getElementById("resDesc").value = json.description || "";
-                        document.getElementById("resTags").value = json.tags || "";
-                        
-                        createThumbnail(json.thumbText || json.title);
-                        
-                        document.getElementById("loadingIndicator").classList.add("hidden");
-                        document.getElementById("resultsSection").classList.remove("hidden");
-                        
-                        setTimeout(() => {
-                            db.collection("users").doc(activeUserSession).collection("history").add({
-                                title: json.title, desc: json.description, tags: json.tags, image: document.getElementById("thumbnailCanvas").toDataURL("image/jpeg", 0.5), timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                            });
-                        }, 500);
+                    let successData = null;
+                    let lastErrorMsg = "";
 
-                    } catch(e) {
-                        alert("Network or Processing Error. Please try again.");
-                        showHome();
+                    for(let i=0; i<aiModels.length; i++) {
+                        try {
+                            const url = `https://generativelanguage.googleapis.com/${aiModels[i]}:generateContent?key=${globalApiKey}`;
+                            const res = await fetch(url, { 
+                                method: "POST", 
+                                headers: { "Content-Type": "application/json" }, 
+                                body: JSON.stringify({ contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: "image/jpeg", data: b64 } }] }] }) 
+                            });
+                            const data = await res.json();
+                            
+                            if(!data.error && data.candidates) {
+                                successData = data;
+                                break; // Stop loop if successful
+                            } else {
+                                lastErrorMsg = data.error.message;
+                            }
+                        } catch(e) { lastErrorMsg = e.message; }
                     }
+
+                    if(!successData) {
+                        alert("API Configuration Issue: " + lastErrorMsg + ". Please check API Key in Admin Panel.");
+                        showHome(); return;
+                    }
+                        
+                    let textRes = successData.candidates[0].content.parts[0].text.replace(/```json|```/g, '').trim();
+                    let json = JSON.parse(textRes);
+                    
+                    document.getElementById("resTitle").value = json.title || "";
+                    document.getElementById("resDesc").value = json.description || "";
+                    document.getElementById("resTags").value = json.tags || "";
+                    
+                    createThumbnail(json.thumbText || json.title);
+                    
+                    document.getElementById("loadingIndicator").classList.add("hidden");
+                    document.getElementById("resultsSection").classList.remove("hidden");
+                    
+                    setTimeout(() => {
+                        db.collection("users").doc(activeUserSession).collection("history").add({
+                            title: json.title, desc: json.description, tags: json.tags, image: document.getElementById("thumbnailCanvas").toDataURL("image/jpeg", 0.5), timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                    }, 500);
                 };
             } catch (e) {
                 alert("Failed to connect to configuration database.");
@@ -381,30 +401,45 @@
             inputEl.value = "";
             chatHistory.scrollTop = chatHistory.scrollHeight;
 
-            // FIXED: Using standard v1 API for Chat
-            const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${globalApiKey}`;
+            // AUTO-FALLBACK AI SYSTEM FOR CHAT
+            const chatModels = [
+                "v1beta/models/gemini-1.5-flash",
+                "v1beta/models/gemini-1.5-pro",
+                "v1/models/gemini-1.5-flash",
+                "v1beta/models/gemini-pro"
+            ];
             
-            try {
-                const res = await fetch(url, { 
-                    method: "POST", 
-                    headers: { "Content-Type": "application/json" }, 
-                    body: JSON.stringify({ contents: [{ parts: [{ text: `You are a YouTube Guru helping a creator. Keep it short and helpful. User says: ${msg}` }] }] }) 
-                });
-                const data = await res.json();
-                
-                let reply = data.candidates[0].content.parts[0].text;
-                
+            let successData = null;
+            
+            for(let i=0; i<chatModels.length; i++) {
+                try {
+                    const url = `https://generativelanguage.googleapis.com/${chatModels[i]}:generateContent?key=${globalApiKey}`;
+                    const res = await fetch(url, { 
+                        method: "POST", 
+                        headers: { "Content-Type": "application/json" }, 
+                        body: JSON.stringify({ contents: [{ parts: [{ text: `You are a YouTube Guru helping a creator. Keep it short and helpful. User says: ${msg}` }] }] }) 
+                    });
+                    const data = await res.json();
+                    
+                    if(!data.error && data.candidates) {
+                        successData = data;
+                        break;
+                    }
+                } catch(e) {}
+            }
+
+            if(successData) {
+                let reply = successData.candidates[0].content.parts[0].text;
                 chatHistory.innerHTML += `
                     <div class="text-left">
                         <span class="bg-slate-800 border border-slate-700 text-slate-200 px-4 py-2 rounded-lg inline-block rounded-tl-none shadow mt-2">
                             ${reply.replace(/\n/g, '<br>')}
                         </span>
                     </div>`;
-                chatHistory.scrollTop = chatHistory.scrollHeight;
-
-            } catch(e) {
-                chatHistory.innerHTML += `<div class="text-center text-red-400 text-xs mt-2">Network Error. Could not get AI response.</div>`;
+            } else {
+                chatHistory.innerHTML += `<div class="text-center text-red-400 text-xs mt-2">Network Error. AI could not respond.</div>`;
             }
+            chatHistory.scrollTop = chatHistory.scrollHeight;
         }
 
         function createThumbnail(mainText) {
