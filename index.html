@@ -328,8 +328,8 @@
                     
                     const prompt = `You are a highly skilled viral YouTube SEO expert. Analyze this image from a video. Generate a highly engaging, clickbaity but accurate JSON format ONLY: {"title": "Viral Catchy Title Here", "description": "SEO optimized description packed with high ranking keywords and hashtags to maximize reach", "tags": "viral, trending, ranking tag 1, ranking tag 2...", "thumbText": "SHORT BOLD"}`;
                     
-                    // SIRF OFFICIAL MODEL USE HOGA: gemini-1.5-flash
-                    const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${globalApiKey}`;
+                    // DIRECT API CALL: EXACTLY gemini-3.8-flash AS DEMANDED
+                    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${globalApiKey}`;
                     
                     try {
                         const res = await fetch(url, { 
@@ -340,7 +340,7 @@
                         const data = await res.json();
                         
                         if(data.error) {
-                            alert("API Error: " + data.error.message + ". Please verify your API Key in Admin Panel.");
+                            alert("API Error: " + data.error.message);
                             showHome(); return;
                         }
                         
@@ -387,8 +387,8 @@
             inputEl.value = "";
             chatHistory.scrollTop = chatHistory.scrollHeight;
 
-            // SIRF OFFICIAL MODEL USE HOGA: gemini-1.5-flash
-            const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${globalApiKey}`;
+            // DIRECT API CALL: EXACTLY gemini-3.8-flash AS DEMANDED
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${globalApiKey}`;
             
             try {
                 const res = await fetch(url, { 
