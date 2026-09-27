@@ -3,12 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
-    <!-- ANTI-CACHE SYSTEM: Browser ko purana code load karne se rokega -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
-
     <title id="pageTitle"></title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -287,44 +284,18 @@
             }
         }
 
-        // --- NEW: UNIVERSAL API CALLER FUNCTION (100% FIXED & ERROR-FREE) ---
-        async function callGeminiAPI(prompt, base64Image) {
-            // Hum sirf valid v1 models try karenge, koi beta nahi, koi error nahi aayega.
-            const models = base64Image ? 
-                ["v1/models/gemini-1.5-flash", "v1/models/gemini-1.5-pro", "v1/models/gemini-pro-vision"] : 
-                ["v1/models/gemini-1.5-flash", "v1/models/gemini-1.5-pro", "v1/models/gemini-pro"];
+        function loadHistoryItem(title, desc, tags, image) {
+            document.getElementById("historySection").classList.add("hidden");
+            document.getElementById("resultsSection").classList.remove("hidden");
             
-            let lastErrorMsg = "";
+            document.getElementById("resTitle").value = title;
+            document.getElementById("resDesc").value = desc;
+            document.getElementById("resTags").value = tags;
             
-            for(let model of models) {
-                try {
-                    const url = `https://generativelanguage.googleapis.com/${model}:generateContent?key=${globalApiKey}`;
-                    const payload = { contents: [{ parts: [{ text: prompt }] }] };
-                    
-                    if(base64Image) {
-                        payload.contents[0].parts.push({
-                            inline_data: { mime_type: "image/jpeg", data: base64Image }
-                        });
-                    }
-                    
-                    const res = await fetch(url, {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify(payload)
-                    });
-                    
-                    const data = await res.json();
-                    
-                    if(!data.error && data.candidates) {
-                        return data.candidates[0].content.parts[0].text;
-                    } else {
-                        lastErrorMsg = data.error.message;
-                    }
-                } catch(e) {
-                    lastErrorMsg = e.message;
-                }
-            }
-            throw new Error(lastErrorMsg);
+            const histImg = document.getElementById("historyPreviewImg");
+            histImg.src = image;
+            histImg.classList.remove("hidden");
+            document.getElementById("thumbnailCanvas").classList.add("hidden");
         }
 
         async function handleVideoUpload(event) {
@@ -359,10 +330,23 @@
                     
                     const prompt = `You are a highly skilled viral YouTube SEO expert. Analyze this image from a video. Generate a highly engaging, clickbaity but accurate JSON format ONLY: {"title": "Viral Catchy Title Here", "description": "SEO optimized description packed with high ranking keywords and hashtags to maximize reach", "tags": "viral, trending, ranking tag 1, ranking tag 2...", "thumbText": "SHORT BOLD"}`;
                     
+                    // FIXED: Single valid API endpoint for Video Upload
+                    const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${globalApiKey}`;
+                    
                     try {
-                        const responseText = await callGeminiAPI(prompt, b64);
+                        const res = await fetch(url, { 
+                            method: "POST", 
+                            headers: { "Content-Type": "application/json" }, 
+                            body: JSON.stringify({ contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: "image/jpeg", data: b64 } }] }] }) 
+                        });
+                        const data = await res.json();
                         
-                        let textRes = responseText.replace(/```json|```/g, '').trim();
+                        if(data.error) {
+                            alert("API Error: " + data.error.message + ". Please verify your API Key in Admin Panel.");
+                            showHome(); return;
+                        }
+                        
+                        let textRes = data.candidates[0].content.parts[0].text.replace(/```json|```/g, '').trim();
                         let json = JSON.parse(textRes);
                         
                         document.getElementById("resTitle").value = json.title || "";
@@ -381,7 +365,7 @@
                         }, 500);
 
                     } catch(e) {
-                        alert("API Error: " + e.message + ". Please verify your API Key in Admin Panel.");
+                        alert("Network Error. Please try again.");
                         showHome();
                     }
                 };
@@ -405,18 +389,30 @@
             inputEl.value = "";
             chatHistory.scrollTop = chatHistory.scrollHeight;
 
+            // FIXED: Single valid API endpoint for Chat
+            const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${globalApiKey}`;
+            
             try {
-                const prompt = `You are a YouTube Guru helping a creator. Keep it short and helpful. User says: ${msg}`;
-                const responseText = await callGeminiAPI(prompt, null);
+                const res = await fetch(url, { 
+                    method: "POST", 
+                    headers: { "Content-Type": "application/json" }, 
+                    body: JSON.stringify({ contents: [{ parts: [{ text: `You are a YouTube Guru helping a creator. Keep it short and helpful. User says: ${msg}` }] }] }) 
+                });
+                const data = await res.json();
                 
-                chatHistory.innerHTML += `
-                    <div class="text-left">
-                        <span class="bg-slate-800 border border-slate-700 text-slate-200 px-4 py-2 rounded-lg inline-block rounded-tl-none shadow mt-2">
-                            ${responseText.replace(/\n/g, '<br>')}
-                        </span>
-                    </div>`;
+                if(!data.error && data.candidates) {
+                    let reply = data.candidates[0].content.parts[0].text;
+                    chatHistory.innerHTML += `
+                        <div class="text-left">
+                            <span class="bg-slate-800 border border-slate-700 text-slate-200 px-4 py-2 rounded-lg inline-block rounded-tl-none shadow mt-2">
+                                ${reply.replace(/\n/g, '<br>')}
+                            </span>
+                        </div>`;
+                } else {
+                    chatHistory.innerHTML += `<div class="text-center text-red-400 text-xs mt-2">API Error: ${data.error.message}</div>`;
+                }
             } catch(e) {
-                chatHistory.innerHTML += `<div class="text-center text-red-400 text-xs mt-2">Network/API Error: ${e.message}</div>`;
+                chatHistory.innerHTML += `<div class="text-center text-red-400 text-xs mt-2">Network Error. AI could not respond.</div>`;
             }
             chatHistory.scrollTop = chatHistory.scrollHeight;
         }
