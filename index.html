@@ -328,9 +328,10 @@
                     
                     const prompt = `You are a highly skilled viral YouTube SEO expert. Analyze this image from a video. Generate a highly engaging, clickbaity but accurate JSON format ONLY: {"title": "Viral Catchy Title Here", "description": "SEO optimized description packed with high ranking keywords and hashtags to maximize reach", "tags": "viral, trending, ranking tag 1, ranking tag 2...", "thumbText": "SHORT BOLD"}`;
                     
+                    // 100% EXCLUSIVELY USING gemini-3.8-flash AS REQUESTED BY YOU
                     const aiModels = [
-                        "v1beta/models/gemini-1.5-flash",
-                        "v1/models/gemini-1.5-flash"
+                        "v1beta/models/gemini-3.8-flash",
+                        "v1/models/gemini-3.8-flash"
                     ];
                     
                     let successData = null;
@@ -356,7 +357,7 @@
                     }
 
                     if(!successData) {
-                        alert("API Configuration Issue: " + lastErrorMsg + ". Please check API Key in Admin Panel.");
+                        alert("API Error: " + lastErrorMsg + ". (Make sure your API key supports 3.8-flash).");
                         showHome(); return;
                     }
                         
@@ -398,9 +399,10 @@
             inputEl.value = "";
             chatHistory.scrollTop = chatHistory.scrollHeight;
 
+            // 100% EXCLUSIVELY USING gemini-3.8-flash FOR CHAT AS WELL
             const chatModels = [
-                "v1beta/models/gemini-1.5-flash",
-                "v1/models/gemini-1.5-flash"
+                "v1beta/models/gemini-3.8-flash",
+                "v1/models/gemini-3.8-flash"
             ];
             
             let successData = null;
@@ -431,7 +433,7 @@
                         </span>
                     </div>`;
             } else {
-                chatHistory.innerHTML += `<div class="text-center text-red-400 text-xs mt-2">Network Error. AI could not respond.</div>`;
+                chatHistory.innerHTML += `<div class="text-center text-red-400 text-xs mt-2">Network Error. AI could not respond. (Ensure 3.8-flash is supported)</div>`;
             }
             chatHistory.scrollTop = chatHistory.scrollHeight;
         }
