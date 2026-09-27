@@ -123,7 +123,7 @@
                     <div id="chatHistory" class="bg-slate-900 w-full h-48 rounded-lg p-4 mb-4 overflow-y-auto flex flex-col gap-3 text-sm border border-slate-700">
                         <div class="text-left">
                             <span class="bg-slate-800 border border-slate-700 text-slate-200 px-4 py-2 rounded-lg inline-block rounded-tl-none">
-                                Hello! Ask me anything about growing your channel, getting more views, or how to use these viral tags!
+                                Hey creator! Ready to grow your channel? What are we tackling today—video ideas, click-worthy titles, retention, or cracking the algorithm? Tell me what you need!
                             </span>
                         </div>
                     </div>
@@ -330,57 +330,44 @@
                     
                     const prompt = `You are a highly skilled viral YouTube SEO expert. Analyze this image from a video. Generate a highly engaging, clickbaity but accurate JSON format ONLY: {"title": "Viral Catchy Title Here", "description": "SEO optimized description packed with high ranking keywords and hashtags to maximize reach", "tags": "viral, trending, ranking tag 1, ranking tag 2...", "thumbText": "SHORT BOLD"}`;
                     
-                    // SIRF 3.8-FLASH MODEL USE KIYA HAI
-                    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${globalApiKey}`;
+                    // Fixed & Official Endpoint
+                    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${globalApiKey}`;
                     
-                    let maxRetries = 3;
-                    let successData = null;
-                    let lastErrorMsg = "";
-
-                    for(let i=0; i<maxRetries; i++) {
-                        try {
-                            const res = await fetch(url, { 
-                                method: "POST", 
-                                headers: { "Content-Type": "application/json" }, 
-                                body: JSON.stringify({ contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: "image/jpeg", data: b64 } }] }] }) 
-                            });
-                            const data = await res.json();
-                            
-                            if(!data.error && data.candidates) {
-                                successData = data;
-                                break; 
-                            } else {
-                                lastErrorMsg = data.error.message;
-                                await new Promise(r => setTimeout(r, 2000)); // 2 second ruko agar busy hai
-                            }
-                        } catch(e) { 
-                            lastErrorMsg = e.message; 
-                            await new Promise(r => setTimeout(r, 2000));
-                        }
-                    }
-
-                    if(!successData) {
-                        alert("API Error: Server bohot busy hai. Kripya thodi der baad try karein.");
-                        showHome(); return;
-                    }
-                        
-                    let textRes = successData.candidates[0].content.parts[0].text.replace(/```json|```/g, '').trim();
-                    let json = JSON.parse(textRes);
-                    
-                    document.getElementById("resTitle").value = json.title || "";
-                    document.getElementById("resDesc").value = json.description || "";
-                    document.getElementById("resTags").value = json.tags || "";
-                    
-                    createThumbnail(json.thumbText || json.title);
-                    
-                    document.getElementById("loadingIndicator").classList.add("hidden");
-                    document.getElementById("resultsSection").classList.remove("hidden");
-                    
-                    setTimeout(() => {
-                        db.collection("users").doc(activeUserSession).collection("history").add({
-                            title: json.title, desc: json.description, tags: json.tags, image: document.getElementById("thumbnailCanvas").toDataURL("image/jpeg", 0.5), timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                    try {
+                        const res = await fetch(url, { 
+                            method: "POST", 
+                            headers: { "Content-Type": "application/json" }, 
+                            body: JSON.stringify({ contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: "image/jpeg", data: b64 } }] }] }) 
                         });
-                    }, 500);
+                        const data = await res.json();
+                        
+                        if(data.error) {
+                            alert("API Error: " + data.error.message);
+                            showHome(); return;
+                        }
+                        
+                        let textRes = data.candidates[0].content.parts[0].text.replace(/```json|```/g, '').trim();
+                        let json = JSON.parse(textRes);
+                        
+                        document.getElementById("resTitle").value = json.title || "";
+                        document.getElementById("resDesc").value = json.description || "";
+                        document.getElementById("resTags").value = json.tags || "";
+                        
+                        createThumbnail(json.thumbText || json.title);
+                        
+                        document.getElementById("loadingIndicator").classList.add("hidden");
+                        document.getElementById("resultsSection").classList.remove("hidden");
+                        
+                        setTimeout(() => {
+                            db.collection("users").doc(activeUserSession).collection("history").add({
+                                title: json.title, desc: json.description, tags: json.tags, image: document.getElementById("thumbnailCanvas").toDataURL("image/jpeg", 0.5), timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                            });
+                        }, 500);
+
+                    } catch(e) {
+                        alert("Network Error. Please try again.");
+                        showHome();
+                    }
                 };
             } catch (e) {
                 alert("Failed to connect to configuration database.");
@@ -391,9 +378,8 @@
         async function sendChatMessage() {
             const inputEl = document.getElementById("chatInput");
             const msg = inputEl.value.trim();
-            if(!msg) return; // FIXED THIS LINE
+            if(!msg) return; 
 
-            // FIXED: Automatically fetch API key if missing (like when opened from History)
             if (!globalApiKey) {
                 try {
                     const adminDoc = await db.collection("admin_settings").doc("api_config").get();
@@ -419,50 +405,36 @@
             chatHistory.scrollTop = chatHistory.scrollHeight;
 
             const typingId = "typing-" + Date.now();
-            chatHistory.innerHTML += `<div id="${typingId}" class="text-left text-xs text-pink-400 mt-1 italic"><i class="fas fa-spinner fa-spin"></i> AI soch raha hai... (agar server busy hua toh auto-retry karega)</div>`;
+            chatHistory.innerHTML += `<div id="${typingId}" class="text-left text-xs text-pink-400 mt-1 italic"><i class="fas fa-spinner fa-spin"></i> AI soch raha hai...</div>`;
             chatHistory.scrollTop = chatHistory.scrollHeight;
 
-            // CHAT MEIN BHI SIRF 3.8-FLASH MODEL USE KIYA HAI
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${globalApiKey}`;
+            // Fixed & Official Endpoint
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${globalApiKey}`;
             
-            let maxRetries = 4;
-            let successData = null;
-            let lastErrorMsg = "";
+            try {
+                const res = await fetch(url, { 
+                    method: "POST", 
+                    headers: { "Content-Type": "application/json" }, 
+                    body: JSON.stringify({ contents: [{ parts: [{ text: `You are a YouTube Guru helping a creator. Keep it short and helpful. User says: ${msg}` }] }] }) 
+                });
+                const data = await res.json();
+                
+                document.getElementById(typingId).remove();
 
-            for(let i=0; i<maxRetries; i++) {
-                try {
-                    const res = await fetch(url, { 
-                        method: "POST", 
-                        headers: { "Content-Type": "application/json" }, 
-                        body: JSON.stringify({ contents: [{ parts: [{ text: `You are a YouTube Guru helping a creator. Keep it short and helpful. User says: ${msg}` }] }] }) 
-                    });
-                    const data = await res.json();
-                    
-                    if(!data.error && data.candidates) {
-                        successData = data;
-                        break;
-                    } else {
-                        lastErrorMsg = data.error.message;
-                        await new Promise(r => setTimeout(r, 2000)); // Agar server busy hai toh 2 second baad auto-retry
-                    }
-                } catch(e) {
-                    lastErrorMsg = "Network connection failed";
-                    await new Promise(r => setTimeout(r, 2000));
+                if(!data.error && data.candidates) {
+                    let reply = data.candidates[0].content.parts[0].text;
+                    chatHistory.innerHTML += `
+                        <div class="text-left">
+                            <span class="bg-slate-800 border border-slate-700 text-slate-200 px-4 py-2 rounded-lg inline-block rounded-tl-none shadow mt-2">
+                                ${reply.replace(/\n/g, '<br>')}
+                            </span>
+                        </div>`;
+                } else {
+                    chatHistory.innerHTML += `<div class="text-center text-red-400 text-xs mt-2">API Error: ${data.error.message}</div>`;
                 }
-            }
-
-            document.getElementById(typingId).remove();
-
-            if(successData) {
-                let reply = successData.candidates[0].content.parts[0].text;
-                chatHistory.innerHTML += `
-                    <div class="text-left">
-                        <span class="bg-slate-800 border border-slate-700 text-slate-200 px-4 py-2 rounded-lg inline-block rounded-tl-none shadow mt-2">
-                            ${reply.replace(/\n/g, '<br>')}
-                        </span>
-                    </div>`;
-            } else {
-                chatHistory.innerHTML += `<div class="text-center text-red-400 text-xs mt-2">API Error: Server abhi bohot overload hai. Thodi der baad msg bhejein.</div>`;
+            } catch(e) {
+                document.getElementById(typingId)?.remove();
+                chatHistory.innerHTML += `<div class="text-center text-red-400 text-xs mt-2">Network Error. Failed to reach Google API.</div>`;
             }
             chatHistory.scrollTop = chatHistory.scrollHeight;
         }
