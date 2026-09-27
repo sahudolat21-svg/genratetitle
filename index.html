@@ -116,7 +116,6 @@
                     </div>
                 </div>
 
-                <!-- Chat Section -->
                 <div class="w-full glass-panel p-6 rounded-xl mt-4 border-t-4 border-pink-500 shadow-xl">
                     <h3 class="text-lg font-bold text-white mb-4"><i class="fas fa-robot text-pink-400 mr-2"></i> Chat with Gemini AI (YouTube Guru)</h3>
                     
@@ -137,7 +136,6 @@
         </main>
     </div>
 
-    <!-- Notification Toast -->
     <div id="toast" class="fixed bottom-5 right-5 bg-green-500 text-white px-6 py-3 rounded shadow-lg font-bold transition-opacity duration-300 opacity-0 pointer-events-none z-50">
         Copied to clipboard!
     </div>
@@ -330,8 +328,8 @@
                     
                     const prompt = `You are a highly skilled viral YouTube SEO expert. Analyze this image from a video. Generate a highly engaging, clickbaity but accurate JSON format ONLY: {"title": "Viral Catchy Title Here", "description": "SEO optimized description packed with high ranking keywords and hashtags to maximize reach", "tags": "viral, trending, ranking tag 1, ranking tag 2...", "thumbText": "SHORT BOLD"}`;
                     
-                    // Direct API Call: Using gemini-1.5-pro-latest which is stable for images.
-                    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro-latest:generateContent?key=${globalApiKey}`;
+                    // SIRF OFFICIAL MODEL USE HOGA: gemini-1.5-flash
+                    const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${globalApiKey}`;
                     
                     try {
                         const res = await fetch(url, { 
@@ -342,7 +340,7 @@
                         const data = await res.json();
                         
                         if(data.error) {
-                            alert("API Error: " + data.error.message);
+                            alert("API Error: " + data.error.message + ". Please verify your API Key in Admin Panel.");
                             showHome(); return;
                         }
                         
@@ -389,8 +387,8 @@
             inputEl.value = "";
             chatHistory.scrollTop = chatHistory.scrollHeight;
 
-            // Direct API Call: Using gemini-1.5-pro-latest for Chat
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro-latest:generateContent?key=${globalApiKey}`;
+            // SIRF OFFICIAL MODEL USE HOGA: gemini-1.5-flash
+            const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${globalApiKey}`;
             
             try {
                 const res = await fetch(url, { 
