@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- ANTI-CACHE SYSTEM -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
@@ -116,6 +117,7 @@
                     </div>
                 </div>
 
+                <!-- Chat Section -->
                 <div class="w-full glass-panel p-6 rounded-xl mt-4 border-t-4 border-pink-500 shadow-xl">
                     <h3 class="text-lg font-bold text-white mb-4"><i class="fas fa-robot text-pink-400 mr-2"></i> Chat with Gemini AI (YouTube Guru)</h3>
                     
@@ -136,6 +138,7 @@
         </main>
     </div>
 
+    <!-- Notification Toast -->
     <div id="toast" class="fixed bottom-5 right-5 bg-green-500 text-white px-6 py-3 rounded shadow-lg font-bold transition-opacity duration-300 opacity-0 pointer-events-none z-50">
         Copied to clipboard!
     </div>
@@ -328,7 +331,7 @@
                     
                     const prompt = `You are a highly skilled viral YouTube SEO expert. Analyze this image from a video. Generate a highly engaging, clickbaity but accurate JSON format ONLY: {"title": "Viral Catchy Title Here", "description": "SEO optimized description packed with high ranking keywords and hashtags to maximize reach", "tags": "viral, trending, ranking tag 1, ranking tag 2...", "thumbText": "SHORT BOLD"}`;
                     
-                    // DIRECT API CALL: EXACTLY gemini-3.8-flash AS DEMANDED
+                    // SIRF 3.8-FLASH MODEL USE KIYA HAI
                     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${globalApiKey}`;
                     
                     try {
@@ -387,7 +390,7 @@
             inputEl.value = "";
             chatHistory.scrollTop = chatHistory.scrollHeight;
 
-            // DIRECT API CALL: EXACTLY gemini-3.8-flash AS DEMANDED
+            // CHAT MEIN BHI SIRF 3.8-FLASH MODEL USE KIYA HAI
             const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${globalApiKey}`;
             
             try {
