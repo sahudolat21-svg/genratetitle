@@ -113,6 +113,7 @@
                     </div>
                 </div>
 
+                <!-- Chat Section -->
                 <div class="w-full glass-panel p-6 rounded-xl mt-4 border-t-4 border-pink-500 shadow-xl">
                     <h3 class="text-lg font-bold text-white mb-4"><i class="fas fa-robot text-pink-400 mr-2"></i> Chat with Gemini AI (YouTube Guru)</h3>
                     
@@ -133,6 +134,7 @@
         </main>
     </div>
 
+    <!-- Notification Toast -->
     <div id="toast" class="fixed bottom-5 right-5 bg-green-500 text-white px-6 py-3 rounded shadow-lg font-bold transition-opacity duration-300 opacity-0 pointer-events-none z-50">
         Copied to clipboard!
     </div>
@@ -317,7 +319,7 @@
                 
                 hiddenVid.onloadedmetadata = () => { hiddenVid.currentTime = Math.min(2, hiddenVid.duration * 0.2); };
                 hiddenVid.onseeked = async () => {
-                    document.getElementById("loadingText").innerText = "Connecting AI Engines... Please wait.";
+                    document.getElementById("loadingText").innerText = "Generating Metadata... Please wait.";
                     const canvas = document.getElementById("hiddenCanvas");
                     canvas.width = 1280; canvas.height = 720;
                     canvas.getContext("2d").drawImage(hiddenVid, 0, 0, 1280, 720);
@@ -325,8 +327,7 @@
                     
                     const prompt = `You are a highly skilled viral YouTube SEO expert. Analyze this image from a video. Generate a highly engaging, clickbaity but accurate JSON format ONLY: {"title": "Viral Catchy Title Here", "description": "SEO optimized description packed with high ranking keywords and hashtags to maximize reach", "tags": "viral, trending, ranking tag 1, ranking tag 2...", "thumbText": "SHORT BOLD"}`;
                     
-                    // FIXED: 100% using v1 API endpoint to prevent v1beta errors
-                    const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${globalApiKey}`;
+                    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${globalApiKey}`;
                     
                     try {
                         const res = await fetch(url, { 
@@ -337,7 +338,7 @@
                         const data = await res.json();
                         
                         if(data.error) {
-                            alert("API Error: " + data.error.message + ". Please verify your API Key.");
+                            alert("API Error: " + data.error.message);
                             showHome(); return;
                         }
                         
@@ -384,8 +385,7 @@
             inputEl.value = "";
             chatHistory.scrollTop = chatHistory.scrollHeight;
 
-            // FIXED: 100% using v1 API endpoint to prevent v1beta errors in Chat
-            const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${globalApiKey}`;
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${globalApiKey}`;
             
             try {
                 const res = await fetch(url, { 
@@ -404,7 +404,7 @@
                             </span>
                         </div>`;
                 } else {
-                    chatHistory.innerHTML += `<div class="text-center text-red-400 text-xs mt-2">API Error: Please check your API key billing.</div>`;
+                    chatHistory.innerHTML += `<div class="text-center text-red-400 text-xs mt-2">API Error: ${data.error.message}</div>`;
                 }
             } catch(e) {
                 chatHistory.innerHTML += `<div class="text-center text-red-400 text-xs mt-2">Network Error. AI could not respond.</div>`;
