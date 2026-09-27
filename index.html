@@ -280,8 +280,8 @@
                     
                     const prompt = `You are a YouTube SEO expert. Generate JSON: {"title": "Catchy Title", "description": "SEO Desc", "tags": "tag1, tag2", "thumbText": "SHORT BOLD"}`;
                     
-                    // FIXED: Using standard v1 endpoint for stable support
-                    const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+                    // FIXED: Changed to gemini-3.8-flash as requested
+                    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${apiKey}`;
                     
                     try {
                         const res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: "image/jpeg", data: b64 } }] }] }) });
