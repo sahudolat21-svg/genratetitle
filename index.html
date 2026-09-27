@@ -330,8 +330,8 @@
                     
                     const prompt = `You are a highly skilled viral YouTube SEO expert. Analyze this image from a video. Generate a highly engaging, clickbaity but accurate JSON format ONLY: {"title": "Viral Catchy Title Here", "description": "SEO optimized description packed with high ranking keywords and hashtags to maximize reach", "tags": "viral, trending, ranking tag 1, ranking tag 2...", "thumbText": "SHORT BOLD"}`;
                     
-                    // FIXED: Strictly using v1 and gemini-1.5-flash
-                    const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${globalApiKey}`;
+                    // FIXED: Using universally supported gemini-1.5-flash-latest on v1beta
+                    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${globalApiKey}`;
                     
                     try {
                         const res = await fetch(url, { 
@@ -408,8 +408,8 @@
             chatHistory.innerHTML += `<div id="${typingId}" class="text-left text-xs text-pink-400 mt-1 italic"><i class="fas fa-spinner fa-spin"></i> AI soch raha hai...</div>`;
             chatHistory.scrollTop = chatHistory.scrollHeight;
 
-            // FIXED: Strictly using v1 and gemini-1.5-flash
-            const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${globalApiKey}`;
+            // FIXED: Using universally supported gemini-pro on v1beta for chat
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${globalApiKey}`;
             
             try {
                 const res = await fetch(url, { 
