@@ -330,8 +330,8 @@
                     
                     const prompt = `You are a highly skilled viral YouTube SEO expert. Analyze this image from a video. Generate a highly engaging, clickbaity but accurate JSON format ONLY: {"title": "Viral Catchy Title Here", "description": "SEO optimized description packed with high ranking keywords and hashtags to maximize reach", "tags": "viral, trending, ranking tag 1, ranking tag 2...", "thumbText": "SHORT BOLD"}`;
                     
-                    // FIXED: Single valid API endpoint for Video Upload
-                    const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${globalApiKey}`;
+                    // Direct API Call: Using gemini-1.5-pro-latest which is stable for images.
+                    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro-latest:generateContent?key=${globalApiKey}`;
                     
                     try {
                         const res = await fetch(url, { 
@@ -342,7 +342,7 @@
                         const data = await res.json();
                         
                         if(data.error) {
-                            alert("API Error: " + data.error.message + ". Please verify your API Key in Admin Panel.");
+                            alert("API Error: " + data.error.message);
                             showHome(); return;
                         }
                         
@@ -389,8 +389,8 @@
             inputEl.value = "";
             chatHistory.scrollTop = chatHistory.scrollHeight;
 
-            // FIXED: Single valid API endpoint for Chat
-            const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${globalApiKey}`;
+            // Direct API Call: Using gemini-1.5-pro-latest for Chat
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro-latest:generateContent?key=${globalApiKey}`;
             
             try {
                 const res = await fetch(url, { 
