@@ -328,12 +328,9 @@
                     
                     const prompt = `You are a highly skilled viral YouTube SEO expert. Analyze this image from a video. Generate a highly engaging, clickbaity but accurate JSON format ONLY: {"title": "Viral Catchy Title Here", "description": "SEO optimized description packed with high ranking keywords and hashtags to maximize reach", "tags": "viral, trending, ranking tag 1, ranking tag 2...", "thumbText": "SHORT BOLD"}`;
                     
-                    // AUTO-FALLBACK AI SYSTEM (This guarantees NO error screen for user)
                     const aiModels = [
                         "v1beta/models/gemini-1.5-flash",
-                        "v1beta/models/gemini-1.5-pro",
-                        "v1/models/gemini-1.5-flash",
-                        "v1beta/models/gemini-pro-vision"
+                        "v1/models/gemini-1.5-flash"
                     ];
                     
                     let successData = null;
@@ -351,7 +348,7 @@
                             
                             if(!data.error && data.candidates) {
                                 successData = data;
-                                break; // Stop loop if successful
+                                break; 
                             } else {
                                 lastErrorMsg = data.error.message;
                             }
@@ -401,12 +398,9 @@
             inputEl.value = "";
             chatHistory.scrollTop = chatHistory.scrollHeight;
 
-            // AUTO-FALLBACK AI SYSTEM FOR CHAT
             const chatModels = [
                 "v1beta/models/gemini-1.5-flash",
-                "v1beta/models/gemini-1.5-pro",
-                "v1/models/gemini-1.5-flash",
-                "v1beta/models/gemini-pro"
+                "v1/models/gemini-1.5-flash"
             ];
             
             let successData = null;
